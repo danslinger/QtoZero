@@ -5,3 +5,5 @@ venv
 migrations
 owner_setup.py
 player_setup.py
+calvinball.wsgi
+
