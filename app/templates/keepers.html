@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title%}Calvinball Fantasy Football{% endblock %}
+{% block page_content %}
+
+<div class="col-sm-9 col-xs-12">
+<img src="{{ url_for('static', filename='images/')}}{{ logo_url }}" width="400">
+{% block messages %}{{super()}}{% endblock%}
+{% if not keeperSet %}   
+<h1>Select Keepers and Tag Players</h1>
+<form method="POST" action="{{url_for('main.keepers')}}" role="form" >
+
+    <div class="form-group">
+        {% for player in roster|sort(reverse=True, attribute='salary') %}
+        {% if player.contractStatus not in ['R0'] %}
+        <div class="input-group">
+        {# <div class="row"> #}
+                <div class="input-group-addon playerName" >{{player.name}}</div>
+                <div class="input-group-addon playerItem" >{{player.team}}</div>
+                <div class="input-group-addon playerItem" >${{player.salary}}</div>
+                <div class="input-group-addon playerStatus" >{{player.contractStatus}}</div>
+
+                <select id="{{player.id}}" name="{{player.id}}"class="form-control">
+                    <option selected=""></option>
+                    {% if player.contractStatus == "S0" %}
+                    <option value="K">Keep</option>
+                    <option value="SFRAN">Super Franchise</option>
+                    <option value="FRAN">Franchise</option>
+                    <option value="TRANS">Transition</option>
+                   {% else %}
+                   <option>Cannot Keep Or Tag Player</option>
+                   {% endif %}
+
+                </select>
+        {# </div> #}
+            
+        </div>
+        {% endif %}
+        {% endfor%}
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+
+</form>
+{% else %}
+<h1>Your keepers and tagged players</h1>
+
+<table class="table table-bordered">
+<thead>
+    <tr>
+        <th>Name</th>
+        <th>NFL Team</th>
+        <th>Contract</th>
+        <th>Salary</th>
+    </tr>
+</thead>
+<tbody>
+    {% for player in roster|sort(reverse=True, attribute='salary') %}
+    <tr>
+        <td>{{player.name}}</td>
+        <td>{{player.team}}</td>
+        <td>{{player.contractStatus}}</td>
+        <td>
+        {% if player.contractStatus in ['TRANS', 'FRAN', 'SFRAN']%}
+        TBD
+        {% else %}
+        {{player.salary}}
+        {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+<FORM METHOD="POST" ACTION="{{url_for('main.reset_keepers')}}">
+<button type="submit" class="btn btn-primary btn-lg">Reset Keepers and Tags</button>
+</FORM>
+
+{% endif %}
+</div>  
+
+{% endblock %}}

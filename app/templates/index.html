@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title%}Calvinball Fantasy Football{% endblock %}
+{% block page_content %}
+
+<div class="col-sm-5">
+<img src="{{ url_for('static', filename='images/')}}{{ logo_url }}" width="400">
+{% block messages %}{{super()}}{% endblock%}
+<h1>Current Roster</h1>
+   
+
+
+
+<table class="table table-bordered">
+<thead>
+    <tr>
+        <th>Name</th>
+        <th>NFL Team</th>
+        <th>Salary</th>
+        <th>Contract Status</th>
+    </tr>
+</thead>
+<tbody>
+    {% for player in roster|sort(reverse=True, attribute='salary') %}
+    <tr>
+        <td>{{player.name}}</td>
+        <td>{{player.team}}</td>
+        <td>${{player.salary}}</td>
+        <td>{{player.contractStatus}}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+</div>  
+
+{% endblock %}}
+
+
+

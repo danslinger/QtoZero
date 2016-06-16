@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title%}Calvinball - Login{% endblock %}
+
+{% block page_content %}
+
+<div class="col-sm-5">
+{% block messages %}{{super()}}{% endblock%}
+<h1>Login</h1>
+    {{ wtf.quick_form(form)}}
+</div>  
+{% endblock %}
