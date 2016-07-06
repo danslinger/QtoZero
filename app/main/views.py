@@ -8,6 +8,8 @@ from .. import db
 from sqlalchemy.sql.expression import or_
 import sys
 
+image_year = "_2016.png"
+
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -41,7 +43,7 @@ def index():
     # teamname = session.get('team_name')
     teamname = session.get('owner').get('team_name')
     # logo_url = session.get('name').upper().replace(" ", "_") + "_2015.png"
-    logo_url = session.get('owner').get('name').upper().replace(" ", "_") + "_2015.png"
+    logo_url = session.get('owner').get('name').upper().replace(" ", "_") + image_year
     return render_template('index.html', 
                             roster=roster,
                             teamname=teamname,
@@ -71,7 +73,7 @@ def keepers():
         if current_owner.keeperSet == True:
             roster = Player.query.filter_by(owner=current_owner).filter(or_(Player.contractStatus.in_(_K), Player.tag.in_(_TAGS))).all()
             teamname = session.get('team_name')
-            logo_url = session.get('name').upper().replace(" ", "_") + "_2015.png"
+            logo_url = session.get('name').upper().replace(" ", "_") + image_year
             return render_template('keepers.html', 
                             roster=roster,
                             teamname=teamname,
@@ -80,7 +82,7 @@ def keepers():
         else:
             roster = Owner.query.filter_by(mfl_team_id=session.get('mfl_id')).first().players
             teamname = session.get('team_name')
-            logo_url = session.get('name').upper().replace(" ", "_") + "_2015.png"
+            logo_url = session.get('name').upper().replace(" ", "_") + image_year
             # flash("This is a test flash")
             return render_template('keepers.html', 
                             roster=roster,
