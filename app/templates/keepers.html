@@ -24,7 +24,7 @@
 
                         <select id="{{player.id}}" name="{{player.id}}"class="form-control">
                             <option selected=""></option>
-                            {% if player.contractStatus == "S1" %}
+                            {% if player.contractStatus in ["S1", "K0"] %}
                             <option value="K">Keep</option>
                             <option value="SFRAN">Super Franchise</option>
                             <option value="FRAN">Franchise</option>
