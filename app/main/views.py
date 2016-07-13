@@ -23,6 +23,8 @@ def login():
             session['owner'] = owner.to_dict()
             # flash('You were successfully logged in')
             return redirect(request.args.get('next') or url_for('main.index'))
+        else:
+            flash('Incorrect Email or Password')
     return render_template('login.html', form=form)
 
 # @main.route('/')
