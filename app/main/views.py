@@ -150,12 +150,12 @@ def reset_keepers():
     tagged_players = Player.query.filter_by(owner=current_owner).filter(Player.tag.in_(_TAGS)).all()
     for p in tagged_players:
         p.tag = ""
-        p.contractStatus = "S0"
+        p.contractStatus = "S1"
         db.session.commit()
     #get players that have K2 and reset
     k2s = Player.query.filter_by(owner=current_owner).filter(Player.contractStatus.in_(["K2"])).all()
     for p in k2s:
-        p.contractStatus = "S0"
+        p.contractStatus = "S1"
         p.salary = p.salary - 5
         db.session.commit()
     current_owner.keeperSet = False
