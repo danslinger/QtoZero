@@ -3,7 +3,7 @@ from flask import render_template, redirect, request, url_for, flash, session
 from flask.ext.login import login_required, login_user, logout_user
 from . import main
 from .forms import LoginForm
-from ..models import Owner, Player
+from ..models import Owner, Player, Bid, DraftPick
 from .. import db
 from sqlalchemy.sql.expression import or_
 import sys
@@ -21,6 +21,7 @@ def login():
             session['mfl_id'] = owner.mfl_team_id
             session['name'] = owner.name
             session['owner'] = owner.to_dict()
+            session['owner_object'] = owner
             # flash('You were successfully logged in')
             return redirect(request.args.get('next') or url_for('main.index'))
         else:
@@ -163,3 +164,33 @@ def reset_keepers():
     current_owner.keeperSet = False
     db.session.commit()
     return redirect(url_for('main.keepers'))
+
+@main.route('/bidding', methods=['GET', 'POST'])
+@login_required
+def bidding():
+    
+    transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+    franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+    bidIn = session.get('owner').get('madeBid')
+
+    if request.method == 'GET':
+
+        return render_template('bidding.html', 
+                transPlayer=transPlayer,
+                franPlayer=franPlayer,
+                bidIn = bidIn
+                )
+
+    if request.method == 'POST':
+        franPlayerBid = request.form.get('franPlayerBid')
+        transPlayerBid = request.form.get('transPlayerBid')
+
+        # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player
+        
+
+        return render_template('bidding.html', 
+                transPlayer=transPlayer,
+                franPlayer=franPlayer,
+                bidIn = bidIn,
+                franPlayerBid=franPlayerBid
+                )

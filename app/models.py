@@ -14,6 +14,8 @@ class Owner(UserMixin, db.Model):
     twitter = db.Column(db.String(32))
     players = db.relationship('Player', backref='owner', lazy='dynamic')
     keeperSet = db.Column(db.Boolean, default=False)
+    draftPicks = db.relationship('DraftPick', backref='owner', lazy='dynamic')
+    madeBid = db.Column(db.Boolean, default=False)
 
 
     @property
@@ -40,11 +42,10 @@ class Owner(UserMixin, db.Model):
             'phone': self.phone,
             'twitter': self.twitter,
             'keeperCount': self.keepers(),
-            'keeperSet': self.keeperSet
+            'keeperSet': self.keeperSet,
+            'madeBid': self.madeBid
         }
         return d
-
-
 
     def __repr__(self):
         return '<Owner %r>' % self.team_name
@@ -74,6 +75,8 @@ class Player(db.Model):
     status = db.Column(db.String(16)) # ROSTER, TAXI_SQUAD, INJURED_RESERVE 
     contractYear = db.Column(db.String(16))
     tag = db.Column(db.String(8)) # [TRANS, FRAN, SUPER_FRAN]
+    upForBid = db.Column(db.Boolean, default=False)
+    finishedBidding = db.Column(db.Boolean, default=False)
 
     def __init__(self, mfl_dict):
         self.updatePlayer(mfl_dict)
@@ -131,3 +134,40 @@ class Player(db.Model):
     def __repr__(self):
         return '<Player id:{0}; name:{1}; mfl_id:{2}>'.format(self.id, self.name, self.mfl_id)
 
+class DraftPick(db.Model):
+    __tablename__ = "draftpicks"
+    id = db.Column(db.Integer, primary_key=True)
+    draftRound = db.Column(db.Integer)
+    pickInRound = db.Column(db.Integer)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
+
+    def updatePick(self, new_owner_id):
+        self.owner_id = new_owner_id
+
+    def __repr__(self):
+        ownerName = Owner.query.get(self.owner_id)
+        return '<Round:{0}; Pick:{1}; Owner:{2}>'.format(self.draftRound, self.pickInRound, ownerName)
+
+
+class Bid(db.Model):
+    __tablename__ = "bids"
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('players.id'))
+    owner_bidding_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
+    amount = db.Column(db.Integer)
+
+    player = db.relationship(Player, backref='bids')
+    owner_bidding = db.relationship(Owner, backref='bids')
+
+    def __init__(self, player_id, owner_bidding_id, amount):
+        self.setBid(player_id, owner_bidding_id, amount)
+
+    def setBid(self, player_id, owner_bidding_id, amount):
+        self.player_id = player_id
+        self.owner_bidding_id = owner_bidding_id
+        self.amount = amount
+
+    def __repr__(self):
+        playerName = Player.query.get(self.player_id).name
+        ownerName = Owner.query.get(self.owner_bidding_id).team_name
+        return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(playerName, ownerName, self.amount)
