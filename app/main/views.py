@@ -171,26 +171,29 @@ def bidding():
     
     transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
     franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
-    bidIn = session.get('owner').get('madeBid')
+    current_owner = Owner.query.get(session.get('owner').get('id'))
+    
 
     if request.method == 'GET':
 
         return render_template('bidding.html', 
                 transPlayer=transPlayer,
                 franPlayer=franPlayer,
-                bidIn = bidIn
+                bidIn = current_owner.madeBid
                 )
 
     if request.method == 'POST':
+        # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
         franPlayerBid = request.form.get('franPlayerBid')
         transPlayerBid = request.form.get('transPlayerBid')
-
-        # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player
         
-
+        tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
+        fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
+        current_owner.madeBid = True
+        
+        db.session.commit()
         return render_template('bidding.html', 
                 transPlayer=transPlayer,
                 franPlayer=franPlayer,
-                bidIn = bidIn,
-                franPlayerBid=franPlayerBid
+                bidIn=current_owner.madeBid,
                 )
