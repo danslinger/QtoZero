@@ -21,7 +21,7 @@ def login():
             session['mfl_id'] = owner.mfl_team_id
             session['name'] = owner.name
             session['owner'] = owner.to_dict()
-            session['owner_object'] = owner
+            # session['owner_object'] = owner #stop doing this!! You can't serialize the owner object (well, maybe.  You can look into that) BUT STOP TRYING THIS
             # flash('You were successfully logged in')
             return redirect(request.args.get('next') or url_for('main.index'))
         else:
@@ -165,35 +165,54 @@ def reset_keepers():
     db.session.commit()
     return redirect(url_for('main.keepers'))
 
-@main.route('/bidding', methods=['GET', 'POST'])
+# @main.route('/bidding', methods=['GET', 'POST'])
+# @login_required
+# def bidding():
+    
+#     transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+#     franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+#     current_owner = Owner.query.get(session.get('owner').get('id'))
+    
+
+#     if request.method == 'GET':
+
+#         return render_template('bidding.html', 
+#                 transPlayer=transPlayer,
+#                 franPlayer=franPlayer,
+#                 bidIn = current_owner.madeBid
+#                 )
+
+#     if request.method == 'POST':
+#         # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
+#         franPlayerBid = request.form.get('franPlayerBid')
+#         transPlayerBid = request.form.get('transPlayerBid')
+        
+#         tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
+#         fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
+#         current_owner.madeBid = True
+        
+#         db.session.commit()
+#         return render_template('bidding.html', 
+#                 transPlayer=transPlayer,
+#                 franPlayer=franPlayer,
+#                 bidIn=current_owner.madeBid,
+#                 )
+
+@main.route('/tagged_players', methods=['GET'])
 @login_required
-def bidding():
-    
-    transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
-    franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
-    current_owner = Owner.query.get(session.get('owner').get('id'))
-    
 
-    if request.method == 'GET':
+def tagged_players():
+    fplayers = Player.query.filter(Player.tag=="FRAN").all()
+    tplayers = Player.query.filter(Player.tag=="TRANS").all()
+    sfplayers = Player.query.filter(Player.tag=="SFRAN").all()
+    k2players = Player.query.filter(Player.contractStatus=="K2").all()
+    k1players = Player.query.filter(Player.contractStatus=="K1").all()
 
-        return render_template('bidding.html', 
-                transPlayer=transPlayer,
-                franPlayer=franPlayer,
-                bidIn = current_owner.madeBid
-                )
 
-    if request.method == 'POST':
-        # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
-        franPlayerBid = request.form.get('franPlayerBid')
-        transPlayerBid = request.form.get('transPlayerBid')
-        
-        tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
-        fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
-        current_owner.madeBid = True
-        
-        db.session.commit()
-        return render_template('bidding.html', 
-                transPlayer=transPlayer,
-                franPlayer=franPlayer,
-                bidIn=current_owner.madeBid,
-                )
+    return render_template('tagged_players.html', 
+        fplayers=fplayers,
+        tplayers=tplayers,
+        sfplayers = sfplayers,
+        k2players=k2players,
+        k1players=k1players
+        )

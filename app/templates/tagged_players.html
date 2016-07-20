@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title%}Calvinball Fantasy Football{% endblock %}
+{% block page_content %}
+
+<div class="col-sm-9 col-xs-12">
+
+{% block messages %}{{super()}}{% endblock%}
+
+{# Make the bidding section here #}
+<div class="row">
+    <div class="col-md-6 col-sm-12">
+        <h3>Super Franchised Players</h3>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Current Owner</th>
+                    <th>Previous Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in sfplayers|sort(reverse=True, attribute='owner.team_name') %}
+                <tr>
+                    <td>{{player.name}}</td>
+                    <td>{{player.owner.team_name}}</td>
+                    <td>{{player.salary}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <h3>Franchised Players</h3>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Current Owner</th>
+                    <th>Previous Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in fplayers|sort(reverse=True, attribute='owner.team_name') %}
+                <tr>
+                    <td>{{player.name}}</td>
+                    <td>{{player.owner.team_name}}</td>
+                    <td>{{player.salary}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6 col-sm-12">
+        <h3>Transition Players</h3>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Current Owner</th>
+                    <th>Previous Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in tplayers|sort(reverse=True, attribute='owner.team_name') %}
+                <tr>
+                    <td>{{player.name}}</td>
+                    <td>{{player.owner.team_name}}</td>
+                    <td>{{player.salary}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>    
+    <div class="col-md-6 col-sm-12">
+        <h3>K2 Players</h3>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Current Owner</th>
+                    <th>2016 Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in k2players|sort(reverse=True, attribute='owner.team_name') %}
+                <tr>
+                    <td>{{player.name}}</td>
+                    <td>{{player.owner.team_name}}</td>
+                    <td>{{player.salary}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        <div class="col-md-6 col-sm-12">
+        <h3>K1 Players (from last year)</h3>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Current Owner</th>
+                    <th>2016 Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in k2players|sort(reverse=True, attribute='owner.team_name') %}
+                <tr>
+                    <td>{{player.name}}</td>
+                    <td>{{player.owner.team_name}}</td>
+                    <td>{{player.salary}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> {# row #}
+
+</div> {# div col-sm-9 col-xs-12#}
+{% endblock %}
