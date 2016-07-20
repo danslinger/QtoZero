@@ -198,10 +198,10 @@ def reset_keepers():
 #                 bidIn=current_owner.madeBid,
 #                 )
 
-@main.route('/tagged_players', methods=['GET'])
+@main.route('/tags', methods=['GET'])
 @login_required
 
-def tagged_players():
+def tags():
     fplayers = Player.query.filter(Player.tag=="FRAN").all()
     tplayers = Player.query.filter(Player.tag=="TRANS").all()
     sfplayers = Player.query.filter(Player.tag=="SFRAN").all()
