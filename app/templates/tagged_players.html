@@ -104,7 +104,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for player in k2players|sort(reverse=True, attribute='owner.team_name') %}
+                {% for player in k1players|sort(reverse=True, attribute='owner.team_name') %}
                 <tr>
                     <td>{{player.name}}</td>
                     <td>{{player.owner.team_name}}</td>
