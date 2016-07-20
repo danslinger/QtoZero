@@ -142,7 +142,25 @@ def keepers():
         # Verify tags < 2 and 1 of each tag type
         # Apply the data for the keepers
         # 
-    
+
+@main.route('/tags', methods=['GET'])
+@login_required
+def tags():
+    fplayers = Player.query.filter(Player.tag=="FRAN").all()
+    tplayers = Player.query.filter(Player.tag=="TRANS").all()
+    sfplayers = Player.query.filter(Player.tag=="SFRAN").all()
+    k2players = Player.query.filter(Player.contractStatus=="K2").all()
+    k1players = Player.query.filter(Player.contractStatus=="K1").all()
+
+
+    return render_template('tagged_players.html', 
+        fplayers=fplayers,
+        tplayers=tplayers,
+        sfplayers=sfplayers,
+        k2players=k2players,
+        k1players=k1players
+        )
+
 @main.route('/reset_keepers', methods=['POST'])
 @login_required
 def reset_keepers():
@@ -198,20 +216,3 @@ def reset_keepers():
 #                 bidIn=current_owner.madeBid,
 #                 )
 
-@main.route('/tags', methods=['GET'])
-@login_required
-def tags():
-    fplayers = Player.query.filter(Player.tag=="FRAN").all()
-    tplayers = Player.query.filter(Player.tag=="TRANS").all()
-    sfplayers = Player.query.filter(Player.tag=="SFRAN").all()
-    k2players = Player.query.filter(Player.contractStatus=="K2").all()
-    k1players = Player.query.filter(Player.contractStatus=="K1").all()
-
-
-    return render_template('tagged_players.html', 
-        fplayers=fplayers,
-        tplayers=tplayers,
-        sfplayers=sfplayers,
-        k2players=k2players,
-        k1players=k1players
-        )
