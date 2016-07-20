@@ -200,7 +200,6 @@ def reset_keepers():
 
 @main.route('/tags', methods=['GET'])
 @login_required
-
 def tags():
     fplayers = Player.query.filter(Player.tag=="FRAN").all()
     tplayers = Player.query.filter(Player.tag=="TRANS").all()
@@ -212,7 +211,7 @@ def tags():
     return render_template('tagged_players.html', 
         fplayers=fplayers,
         tplayers=tplayers,
-        sfplayers = sfplayers,
+        sfplayers=sfplayers,
         k2players=k2players,
         k1players=k1players
         )
