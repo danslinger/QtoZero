@@ -143,7 +143,7 @@ def keepers():
         # Apply the data for the keepers
         # 
 
-@main.route('/tags', methods=['GET'])
+@main.route('/tags')
 @login_required
 def tags():
     fplayers = Player.query.filter(Player.tag=="FRAN").all()
