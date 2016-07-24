@@ -155,6 +155,7 @@ class Bid(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('players.id'))
     owner_bidding_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
     amount = db.Column(db.Integer)
+    winningBid = db.Column(db.Boolean, default=False)
 
     player = db.relationship(Player, backref='bids')
     owner_bidding = db.relationship(Owner, backref='bids')
@@ -171,3 +172,13 @@ class Bid(db.Model):
         playerName = Player.query.get(self.player_id).name
         ownerName = Owner.query.get(self.owner_bidding_id).team_name
         return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(playerName, ownerName, self.amount)
+
+class States(db.Model):
+    __tablename__ = 'states'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(16))
+    number = db.Column(db.Integer, default=None)
+    bools = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return 'Name: {0}; number {1}; bools {2}'.format(self.name, self.number, self.bools)

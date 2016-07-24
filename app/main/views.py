@@ -3,7 +3,7 @@ from flask import render_template, redirect, request, url_for, flash, session
 from flask.ext.login import login_required, login_user, logout_user
 from . import main
 from .forms import LoginForm
-from ..models import Owner, Player, Bid, DraftPick
+from ..models import Owner, Player, Bid, DraftPick, States
 from .. import db
 from sqlalchemy.sql.expression import or_
 import sys

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 from app import create_app, db
-from app.models import Owner, Player, DraftPick, Bid
+from app.models import Owner, Player, DraftPick, Bid, States
 from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
 
@@ -11,7 +11,7 @@ migrate = Migrate(app, db)
 
 
 def make_shell_context():
-    return dict(app=app, db=db, Owner=Owner, Player=Player, Bid=Bid, DraftPick=DraftPick)
+    return dict(app=app, db=db, Owner=Owner, Player=Player, Bid=Bid, DraftPick=DraftPick, States=States)
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)
 
