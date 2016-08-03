@@ -7,6 +7,8 @@ from ..models import Owner, Player, Bid, DraftPick, States
 from .. import db
 from sqlalchemy.sql.expression import or_
 import sys
+from ..bidding import highestBid
+from operator import attrgetter
 
 image_year = "_2016.png"
 
@@ -67,6 +69,7 @@ def contacts():
 @main.route('/keepers', methods=['GET', 'POST'])
 @login_required
 def keepers():
+    return redirect(url_for('main.tags'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     error = False
     _TAGS = ['FRAN', 'SFRAN', 'TRANS']
@@ -183,36 +186,178 @@ def reset_keepers():
     db.session.commit()
     return redirect(url_for('main.keepers'))
 
-# @main.route('/bidding', methods=['GET', 'POST'])
-# @login_required
-# def bidding():
-    
-#     transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
-#     franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
-#     current_owner = Owner.query.get(session.get('owner').get('id'))
-    
+@main.route('/bidding', methods=['GET', 'POST'])
+@login_required
+def bidding():
+    biddingOn = States.query.filter(States.name == 'biddingOn').scalar().bools
+    if biddingOn:
+        transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+        franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+        current_owner = Owner.query.get(session.get('owner').get('id'))
+        if current_owner.madeBid:
+            tBid = Bid.query.filter(Bid.player_id == transPlayer.id)\
+                            .filter(Bid.owner_bidding_id == current_owner.id)\
+                            .scalar()
+            fBid = Bid.query.filter(Bid.player_id == franPlayer.id)\
+                            .filter(Bid.owner_bidding_id == current_owner.id)\
+                            .scalar()
+        else:
+            tBid = None
+            fBid = None
 
-#     if request.method == 'GET':
+        if request.method == 'GET':
 
-#         return render_template('bidding.html', 
-#                 transPlayer=transPlayer,
-#                 franPlayer=franPlayer,
-#                 bidIn = current_owner.madeBid
-#                 )
+            return render_template('bidding.html', 
+                    transPlayer=transPlayer,
+                    franPlayer=franPlayer,
+                    biddingOn=biddingOn,
+                    tBid=tBid,
+                    fBid=fBid,
+                    madeBid=current_owner.madeBid
+                    )
 
-#     if request.method == 'POST':
-#         # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
-#         franPlayerBid = request.form.get('franPlayerBid')
-#         transPlayerBid = request.form.get('transPlayerBid')
+        if request.method == 'POST':
+            # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
+            franPlayerBid = int(request.form.get('franPlayerBid')) or 0
+            transPlayerBid = int(request.form.get('transPlayerBid')) or 0
+
+
+            if not franPlayerBid and not transPlayerBid:
+                flash("You didn't enter a bid for either player.")
+                return redirect(url_for('main.bidding'))
+            
+            invalidBid = False    
+            # Check if owner has draft pick available
+            if not current_owner.hasPick(1) and franPlayerBid:
+                flash("You don't have a first round pick.  Cannot bid on a Franchise Player")
+                invalidBid = True
+            if not current_owner.hasPick(2) and transPlayerBid:
+                flash("You don't have a second round pick.  Cannot bid on a Transition Player")
+                invalidBid = True
+            if franPlayerBid > 0 and franPlayerBid < 30: 
+                flash("Minimum bid for a Franchise Player is $30")
+                invalidBid = True
+
+            if transPlayerBid < 20 and transPlayerBid > 0:
+                flash("Minimum bid for a Transition Player is $20")
+                invalidBid = True
+            if transPlayerBid > 100 or franPlayerBid > 100:
+                flash("Over $100?  Really?  This isn't Brandon Jackson.  Try again...")
+                invalidBid = True
+            if invalidBid:
+                return redirect(url_for('main.bidding'))
+            
+            else:
+                tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
+                fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
+                db.session.add_all([tBid, fBid])
+
+                current_owner.madeBid = True
+                session['owner'] = current_owner.to_dict()
+                
+                db.session.commit()
+                return redirect(url_for('main.bidding'))
+                # return render_template('bidding.html', 
+                #     transPlayer=transPlayer,
+                #     franPlayer=franPlayer,
+                #     biddingOn=biddingOn
+                #     )
+        else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
+            return redirect(url_for('main.match'))
+
+@main.route('/reset_bids', methods=['POST'])
+@login_required
+def reset_bids():
+    transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+    franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+    current_owner = Owner.query.get(session.get('owner').get('id'))
+
+    #find bid for transPlayer with current_owner, delete it
+    tBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
+    db.session.delete(tBid)    
+    #find bid for franPlayer with current_owner, delete it
+    fBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
+    db.session.delete(fBid)
+
+    current_owner.madeBid = False
+    session['owner'] = current_owner.to_dict()
+    db.session.commit()
+    return redirect(url_for('main.bidding'))
+
+@main.route('/match', methods=['GET'])
+@login_required
+def match():
+    biddingOn = States.query.filter(States.name == 'biddingOn').scalar().bools
+    if biddingOn: #make sure no one comes here on accident
+        return redirect(url_for('main.bidding'))
+    else:
+        #get the current players up for bid
+        transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+        franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
         
-#         tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
-#         fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
-#         current_owner.madeBid = True
-        
-#         db.session.commit()
-#         return render_template('bidding.html', 
-#                 transPlayer=transPlayer,
-#                 franPlayer=franPlayer,
-#                 bidIn=current_owner.madeBid,
-#                 )
+        # get the winning transition and franchise bids
+        # bidding.py stopBid() should have run, so can get winning bid via queries
+        winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
+        winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
 
+        winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+        highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+        winningFranPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
+        highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+        
+        return render_template('match.html',
+                            transPlayer=transPlayer,
+                            franPlayer=franPlayer,
+                            tBid=winningTransBid,
+                            fBid=winningFranBid,
+                            highestFranPick=highestFranPick,
+                            highestTransPick=highestTransPick,
+                            franchiseDecisionMade=States.query.filter(States.name == 'franchiseDecisionMade').scalar(),
+                            transitionDecisionMade=States.query.filter(States.name == 'transitionDecisionMade').scalar()
+                            )
+@main.route('/matchTrans', methods=['POST'])
+@login_required
+def matchTrans():
+    transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+    winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
+    winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+    highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+    current_owner = Owner.query.get(transPlayer.owner.id)
+    bidding_owner = Owner.query.get(highestTransPick.owner_id)
+
+    decision = request.form.get('transMatch')
+    if decision == 'match': #keep player
+        # could do lots of things... but really don't need to do anything
+        pass
+    else: #release player
+        transPlayer.owner = highestTransPick.owner_id
+        highestTransPick.updatePick(current_owner.id)
+
+
+    transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar()
+    transitionDecisionMade.bools = True
+    db.session.commit()
+    return redirect(url_for('main.match'))
+
+@main.route('/matchFran', methods=['POST'])
+@login_required
+def matchFran():
+    franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+    winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
+    winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+    highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+    current_owner = Owner.query.get(franPlayer.owner.id)
+    bidding_owner = Owner.query.get(highestFranPick.owner_id)
+
+    decision = request.form.get('franMatch')
+    if decision == 'match': #keep player
+        # could do lots of things... but really don't need to do anything
+        pass
+    else: #release player
+        franPlayer.owner = highestFranPick.owner_id
+        highestFranPick.updatePick(current_owner.id)
+
+    franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar()
+    franchiseDecisionMade.bools = True
+    db.session.commit()
+    return redirect(url_for('main.match'))

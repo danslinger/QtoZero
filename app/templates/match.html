@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title%}Calvinball Fantasy Football{% endblock %}
+{% block page_content %}
+
+<div class="col-sm-9 col-xs-12">
+
+{% block messages %}{{super()}}{% endblock%}
+<div class="row">
+    <div class="col-sm-12 col-xs-12"></div>
+    <h1>Current Round Winning Bids</h1>
+    <div class="col-sm-6 col-xs-12">
+        <h2>Transition Player</h2>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Highest Bidder</th>
+                    <th>Winning Bid</th>
+                    <th>Winning Bid Adjusted</th>
+                    <th>Winning Team's Pick</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{tBid.player.name}}</td>
+                    <td>{{tBid.owner_bidding.team_name}}</td>
+                    <td>${{tBid.amount}}</td>
+                    <td>${{tBid.winningAmount}}</td>
+                    <td>Round 2 Pick #{{highestTransPick.pickInRound}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% if transPlayer.owner.id == session.get('owner').get('id') %}
+            {% if tBid.owner_bidding.id == session.get('owner').get('id') %}
+                <p>No one bid on {{transPlayer}}.  You get him for $20</p>
+            {% elif transitionDecisionMade %}
+                <p>You made your choice for this player all ready.</p>
+            {% else %}
+            <form method="POST" action="{{url_for('main.matchTrans') }}">
+                <select id="transMatch" name="transMatch">
+                    <option value="match">{{tBid.player.name}} at ${{tBid.amount}}</option>
+                    <option value="release">Round 2 Pick #{{highestTransPick.pickInRound}} and $10 FAAB
+                </select>
+            </form>
+            <button type="submit" class="btn btn-primary btn-lg"></button>
+            {% endif %} {# if transitionDecisionMade #}
+        {% endif %}
+    </div>
+    <div class="col-sm-6 col-xs-12">
+        <h2>Franchise Player</h2>
+        <table class="table table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Highest Bidder</th>
+                    <th>Winning Bid</th>
+                    <th>Winning Bid Adjusted</th>
+                    <th>Winning Team's Pick</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{fBid.player.name}}</td>
+                    <td>{{fBid.owner_bidding.team_name}}</td>
+                    <td>${{fBid.amount}}</td>
+                    <td>${{fBid.winningAmount}}</td>
+                    <td>Round 1 Pick #{{highestFranPick.pickInRound}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {% if franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
+            {% if fBid.owner_bidding.id == session.get('owner').get('id') %}
+                <p>No one bid on {{franPlayer}}.  You get him for $30</p>
+            {% elif franchiseDecisionMade %}
+                <p>You made your choice for this player all ready.</p>
+            {% else %}
+            <form method="POST" action="{{url_for('main.matchFran') }}">
+                <select id="franMatch" name="franMatch">
+                    <option value="match">{{fBid.player.name}} at ${{fBid.amount}}</option>
+                    <option value="release">Round 1 Pick #{{highestTransPick.pickInRound}} and $5 CAB
+                </select>
+            </form>
+            <button type="submit" class="btn btn-primary btn-lg"></button>
+            {% endif %} {# if franchiseDecisionMade #}
+        {% endif %}
+
+    </div>
+    </div>
+</div>
+
+</div>
+
+{% endblock %}}

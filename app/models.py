@@ -46,6 +46,13 @@ class Owner(UserMixin, db.Model):
             'madeBid': self.madeBid
         }
         return d
+    def hasPick(self, rd):
+        picks = self.draftPicks.query.filter(DraftPick.draftRound == rd).all()
+        if picks:
+            return True
+        else:
+            return False
+
 
     def __repr__(self):
         return '<Owner %r>' % self.team_name
@@ -156,6 +163,7 @@ class Bid(db.Model):
     owner_bidding_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
     amount = db.Column(db.Integer)
     winningBid = db.Column(db.Boolean, default=False)
+    winningAmount = db.Column(db.Integer)
 
     player = db.relationship(Player, backref='bids')
     owner_bidding = db.relationship(Owner, backref='bids')

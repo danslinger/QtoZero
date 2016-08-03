@@ -1,9 +1,10 @@
 import os
 from app.models import States, Player, Owner, Bid, DraftPick
-from app import db, create_app
+from app import db, create_app, login_manager
 import random
 import sys
 from operator import attrgetter
+
 
 def getRandomPlayer(playerType):
     # query for all players of tag==playerType whose finishedBidding is false
@@ -16,6 +17,33 @@ def getRandomPlayer(playerType):
 
 def startBid():
     #make sure all owners madeBid attribute is set to False
+    # get the tPlayer and fPlayer.  None if first time - previous player bid if not
+    tPlayer = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
+    fPlayer = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
+
+    if tPlayer: #not the first time
+        # if owner of transition pick didn't make a decision, the player changes hands
+        if not States.query.filter(States.name == 'transitionDecisionMade').scalar().bools:
+            winningTransBid = Bid.query.filter(Bid.player_id == tPlayer.id).filter(Bid.winningBid == True).scalar()
+            winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+            highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+            current_owner = Owner.query.get(tPlayer.owner.id)
+            bidding_owner = Owner.query.get(highestTransPick.owner_id)
+            tPlayer.owner = highestTransPick.owner_id
+            highestTransPick.updatePick(current_owner.id)
+        tPlayer.upForBid = False
+    if fPlayer: #not the first time
+        # if owner of franchise pick didn't make a decision, the player changes hands
+        if not States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools:
+            winningFranBid = Bid.query.filter(Bid.player_id == fPlayer.id).filter(Bid.winningBid == True).scalar()
+            winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
+            highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+            current_owner = Owner.query.get(fPlayer.owner.id)
+            bidding_owner = Owner.query.get(highestFranPick.owner_id)
+            fPlayer.owner = highestFranPick.owner_id
+            highestFranPick.updatePick(current_owner.id)
+        fPlayer.upForBid = False
+
     owners = Owner.query.all()
     for o in owners:
         o.madeBid = False
@@ -28,44 +56,69 @@ def startBid():
     States.query.filter(States.name == 'biddingOn').scalar().bools = True
     db.session.commit()
 
-
-    # print fPlayer, tPlayer
-
 def stopBid():
     # get the tPlayer and fPlayer
     tPlayer = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
     fPlayer = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
 
-    winningTransBid = highestBid(tPlayer, 'TRANS')
-    winningFranBid = highestBid(fPlayer, 'FRAN')
+    tBids = getBids(tPlayer)
+    fBids = getBids(fPlayer)
 
-    # print winningTransBid, winningFranBid
+    processBids(tPlayer, 'TRANS', tBids)
+    processBids(fPlayer, 'FRAN', fBids)
+
+    # if tBids:
+    #     winningTransBid = highestBid(tPlayer, 'TRANS', tBids)
+    #     winningTransBid.winningBid = True
+    # else: #no bids for player
+    #     winningTransBid = Bid(player_id=tPlayer.id,
+    #                           owner_bidding_id=tPlayer.owner.id,
+    #                           amount=20,
+    #                           winningBid=True )
+    # if fBids:
+    #     winningFranBid = highestBid(fPlayer, 'FRAN', fBids)
+    #     winningFranBid.winningBid = True
+    # else:
+    #     winningFranBid = Bid(player_id=fPlayer.id,
+    #                           owner_bidding_id=fPlayer.owner.id,
+    #                           amount=30,
+    #                           winningBid=True )
 
     #update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
-
-    #set winning bids 
-    winningTransBid.winningBid = True
-    winningFranBid.winningBid = True
-
+    
+    tPlayer.finishedBidding = True
+    fPlayer.finishedBidding = True
     db.session.commit()
     
+##### NEED TO FIGURE OUT OWNER in SESSION.  Force log out? ########
 
 
 def getBids(player):
     return Bid.query.filter(Bid.player_id == player.id).all()
 
-def highestBid(player, tagType):
-    bids = getBids(player)
+def highestBid(player, tagType, bids):
+    
     highAmount = max(bids, key=attrgetter('amount')).amount
-    winningBids = [b for b in bids if b.amount == highAmount]
-    if len(winningBids) == 0:
-        print "No winning bids"
-    elif len(winningBids) == 1:
-        #only one winning bid
-        return winningBids[0]
-    else:
-        return getBidWithHighestPick(winningBids, tagType)
+
+    #need to find the highest bid, then modify it so it is the second highest bid + 1
+    #unless the second highest == highest, then it is just the highest
+    allBidAmounts = [b.amount for b in bids]
+    highBidCount = allBidAmounts.count(highAmount)
+    #cases to handle are: single high bid, multiple high bid
+
+    if highBidCount == 1: #single high bid
+        allBidAmounts.remove(highAmount)
+        secondHighAmount = max(allBidAmounts)
+        winningBid = next(b for b in bids if b.amount == highAmount)
+        winningBid.winningAmount = secondHighAmount + 1
+    else: #multiple high bid
+        winningBids = [b for b in bids if b.amount == highAmount]
+        winningBid = getBidWithHighestPick(winningBids, tagType)
+        winningBid.winningAmount = highAmount
+
+    db.session.commit()
+    return winningBid
 
 def getBidWithHighestPick(winningBids, tagType):
     if tagType == "FRAN":
@@ -80,6 +133,21 @@ def getBidWithHighestPick(winningBids, tagType):
     picks = [pick for pks in picksList for pick in pks] #flattens list
     highestPickIndex = picks.index(min(picks, key=attrgetter('pickInRound')))
     return winningBids[highestPickIndex]
+
+def processBids(player,tag, bids):
+    if bids:
+        winningBid = highestBid(player, tag, bids)
+        winningBid.winningBid = True
+    else:
+        winningBid = Bid(player_id=player.id,
+                         owner_bidding_id = player.owner.id,
+                         winningBid=True
+                         )
+        if tag == 'TRANS':
+            winningBid.amount = 20
+        elif tag == 'FRAN':
+            winningBid.amount = 30
+    db.session.commit()
 
 
 if __name__ == '__main__':
