@@ -20,27 +20,29 @@ def startBid():
     # get the tPlayer and fPlayer.  None if first time - previous player bid if not
     tPlayer = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
     fPlayer = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
+    franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
+    transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
 
     if tPlayer: #not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
-        if not States.query.filter(States.name == 'transitionDecisionMade').scalar().bools:
+        if not transitionDecisionMade:
             winningTransBid = Bid.query.filter(Bid.player_id == tPlayer.id).filter(Bid.winningBid == True).scalar()
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
             highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
             current_owner = Owner.query.get(tPlayer.owner.id)
             bidding_owner = Owner.query.get(highestTransPick.owner_id)
-            tPlayer.owner = highestTransPick.owner_id
+            tPlayer.updateOwner(bidding_owner.id)
             highestTransPick.updatePick(current_owner.id)
         tPlayer.upForBid = False
     if fPlayer: #not the first time
         # if owner of franchise pick didn't make a decision, the player changes hands
-        if not States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools:
+        if not franchiseDecisionMade:
             winningFranBid = Bid.query.filter(Bid.player_id == fPlayer.id).filter(Bid.winningBid == True).scalar()
             winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
             highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
             current_owner = Owner.query.get(fPlayer.owner.id)
             bidding_owner = Owner.query.get(highestFranPick.owner_id)
-            fPlayer.owner = highestFranPick.owner_id
+            fPlayer.updateOwner(bidding_owner.id)
             highestFranPick.updatePick(current_owner.id)
         fPlayer.upForBid = False
 
@@ -54,6 +56,8 @@ def startBid():
     fPlayer.upForBid = True
 
     States.query.filter(States.name == 'biddingOn').scalar().bools = True
+    States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = False
+    States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = False
     db.session.commit()
 
 def stopBid():
@@ -66,23 +70,6 @@ def stopBid():
 
     processBids(tPlayer, 'TRANS', tBids)
     processBids(fPlayer, 'FRAN', fBids)
-
-    # if tBids:
-    #     winningTransBid = highestBid(tPlayer, 'TRANS', tBids)
-    #     winningTransBid.winningBid = True
-    # else: #no bids for player
-    #     winningTransBid = Bid(player_id=tPlayer.id,
-    #                           owner_bidding_id=tPlayer.owner.id,
-    #                           amount=20,
-    #                           winningBid=True )
-    # if fBids:
-    #     winningFranBid = highestBid(fPlayer, 'FRAN', fBids)
-    #     winningFranBid.winningBid = True
-    # else:
-    #     winningFranBid = Bid(player_id=fPlayer.id,
-    #                           owner_bidding_id=fPlayer.owner.id,
-    #                           amount=30,
-    #                           winningBid=True )
 
     #update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
@@ -98,26 +85,34 @@ def getBids(player):
     return Bid.query.filter(Bid.player_id == player.id).all()
 
 def highestBid(player, tagType, bids):
+    if len(bids) == 1: #There is only 1 bid
+        winningBid = bids[0]
+        winnningBid.winningAmount = winningBid.amount
+    else:
+        #need to find the highest bid, then modify it so it is the second highest bid + 1
+        #unless the second highest == highest, then it is just the highest
     
-    highAmount = max(bids, key=attrgetter('amount')).amount
+        highAmount = max(bids, key=attrgetter('amount')).amount
 
-    #need to find the highest bid, then modify it so it is the second highest bid + 1
-    #unless the second highest == highest, then it is just the highest
-    allBidAmounts = [b.amount for b in bids]
-    highBidCount = allBidAmounts.count(highAmount)
-    #cases to handle are: single high bid, multiple high bid
-
-    if highBidCount == 1: #single high bid
-        allBidAmounts.remove(highAmount)
-        secondHighAmount = max(allBidAmounts)
-        winningBid = next(b for b in bids if b.amount == highAmount)
-        winningBid.winningAmount = secondHighAmount + 1
-    else: #multiple high bid
+        # allBidAmounts = [b.amount for b in bids]
+        # highBidCount = allBidAmounts.count(highAmount)
+        # high bid amount is the amount.  No second highest + 1
         winningBids = [b for b in bids if b.amount == highAmount]
-        winningBid = getBidWithHighestPick(winningBids, tagType)
-        winningBid.winningAmount = highAmount
+        winningBid = getBidWithHighestPick(winningBids, tagType)  
+        
+                # OLD cases to handle are: single high bid, multiple high bid
+        
+                # if highBidCount == 1: #single high bid
+                #     allBidAmounts.remove(highAmount)
+                #     secondHighAmount = max(allBidAmounts)
+                #     winningBid = next(b for b in bids if b.amount == highAmount)
+                #     winningBid.winningAmount = secondHighAmount + 1
+                # else: #multiple high bid
+                #     winningBids = [b for b in bids if b.amount )== highAmount]
+        #     winningBid = getBidWithHighestPick(winningBids, tagType)
+        #     winningBid.winningAmount = highAmount
 
-    db.session.commit()
+        db.session.commit()
     return winningBid
 
 def getBidWithHighestPick(winningBids, tagType):
@@ -139,14 +134,18 @@ def processBids(player,tag, bids):
         winningBid = highestBid(player, tag, bids)
         winningBid.winningBid = True
     else:
+        if tag == 'TRANS':
+            amount = 20
+            States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = True
+        elif tag == 'FRAN':
+            amount = 30
+            States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = True
         winningBid = Bid(player_id=player.id,
                          owner_bidding_id = player.owner.id,
-                         winningBid=True
+                         amount=amount,
                          )
-        if tag == 'TRANS':
-            winningBid.amount = 20
-        elif tag == 'FRAN':
-            winningBid.amount = 30
+        winningBid.winningBid = True
+        db.session.add(winningBid)
     db.session.commit()
 
 

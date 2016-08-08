@@ -244,9 +244,9 @@ def bidding():
             if transPlayerBid > 100 or franPlayerBid > 100:
                 flash("Over $100?  Really?  This isn't Brandon Jackson.  Try again...")
                 invalidBid = True
+            
             if invalidBid:
                 return redirect(url_for('main.bidding'))
-            
             else:
                 tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
                 fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
@@ -262,8 +262,8 @@ def bidding():
                 #     franPlayer=franPlayer,
                 #     biddingOn=biddingOn
                 #     )
-        else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
-            return redirect(url_for('main.match'))
+    else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
+        return redirect(url_for('main.match'))
 
 @main.route('/reset_bids', methods=['POST'])
 @login_required
@@ -288,6 +288,8 @@ def reset_bids():
 @login_required
 def match():
     biddingOn = States.query.filter(States.name == 'biddingOn').scalar().bools
+    franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
+    transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
     if biddingOn: #make sure no one comes here on accident
         return redirect(url_for('main.bidding'))
     else:
@@ -299,11 +301,16 @@ def match():
         # bidding.py stopBid() should have run, so can get winning bid via queries
         winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
         winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
-
-        winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-        highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-        winningFranPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-        highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+        if not franchiseDecisionMade:
+            winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
+            highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+        else:
+            highestFranPick = None
+        if not transitionDecisionMade:
+            winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+            highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+        else:
+            highestTransPick = None
         
         return render_template('match.html',
                             transPlayer=transPlayer,
@@ -312,8 +319,8 @@ def match():
                             fBid=winningFranBid,
                             highestFranPick=highestFranPick,
                             highestTransPick=highestTransPick,
-                            franchiseDecisionMade=States.query.filter(States.name == 'franchiseDecisionMade').scalar(),
-                            transitionDecisionMade=States.query.filter(States.name == 'transitionDecisionMade').scalar()
+                            franchiseDecisionMade=franchiseDecisionMade,
+                            transitionDecisionMade=transitionDecisionMade,
                             )
 @main.route('/matchTrans', methods=['POST'])
 @login_required
@@ -330,7 +337,7 @@ def matchTrans():
         # could do lots of things... but really don't need to do anything
         pass
     else: #release player
-        transPlayer.owner = highestTransPick.owner_id
+        transPlayer.updateOwner(bidding_owner.id)
         highestTransPick.updatePick(current_owner.id)
 
 
@@ -344,7 +351,7 @@ def matchTrans():
 def matchFran():
     franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
     winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
-    winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+    winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
     highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
     current_owner = Owner.query.get(franPlayer.owner.id)
     bidding_owner = Owner.query.get(highestFranPick.owner_id)
@@ -354,7 +361,7 @@ def matchFran():
         # could do lots of things... but really don't need to do anything
         pass
     else: #release player
-        franPlayer.owner = highestFranPick.owner_id
+        franPlayer.updateOwner(bidding_owner.id)
         highestFranPick.updatePick(current_owner.id)
 
     franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar()

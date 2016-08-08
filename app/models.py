@@ -47,7 +47,7 @@ class Owner(UserMixin, db.Model):
         }
         return d
     def hasPick(self, rd):
-        picks = self.draftPicks.query.filter(DraftPick.draftRound == rd).all()
+        picks = self.draftPicks.filter(DraftPick.draftRound == rd).all()
         if picks:
             return True
         else:
@@ -77,6 +77,7 @@ class Player(db.Model):
     cbs_id = db.Column(db.String(32))
     twitter_username = db.column(db.String(32))
     mfl_team = db.Column(db.Integer, db.ForeignKey('owners.id')) 
+    previous_owner_id = db.Column(db.Integer) 
     salary = db.Column(db.Integer)
     contractStatus = db.Column(db.String(8))
     status = db.Column(db.String(16)) # ROSTER, TAXI_SQUAD, INJURED_RESERVE 
@@ -128,6 +129,10 @@ class Player(db.Model):
         self.status = contractInfo.get('status') or "FA"    #all should have this.  Not sure why I added or "FA"
         self.salary = contractInfo.get('salary')
         self.mfl_team = self.setMFLTeamFromMFLID(mfl_id)
+
+    def updateOwner(self, new_owner_id):
+        self.previous_owner_id = self.mfl_team
+        self.mfl_team = new_owner_id
 
     def setMFLTeamFromMFLID(self, mfl_id):
         return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
