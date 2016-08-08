@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title%}Calvinball Fantasy Football{% endblock %}
+{% block page_content %}
+
+<div class="col-sm-9 col-xs-12">
+
+{% block messages %}{{super()}}{% endblock%}
+<div class="row">
+    <h1>Current Draft Order</h1>
+    {% for x in range(1,3)%}
+    <div class="col-sm-6 col-xs-12 table-responsive">
+        <table class="table table-condensed table-striped">
+            <caption class="h4">Round {{x}}</caption>
+            <thead>
+                <tr>
+                    <th>Round</th>
+                    <th>Pick</th>
+                    <th>Owner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dp in draftPicks if dp.draftRound == x %}
+                <tr>
+                    <td>{{dp.draftRound}}</td>
+                    <td>{{dp.pickInRound}}</td>
+                    <td>{{dp.owner.team_name}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+<div class="row">
+    <div class="col-sm-6">
+        <p class="lead">
+            *Note
+        </p>
+        <p>This is the <em>current</em> draft order.  It may change anytime a player changes teams during this process.  There is a screen shot of the original draft order on Slack.  Danny probably should have figured out how to store the original order and not rely on lame screenshots.  Maybe next time.</p>
+    </div>
+</div>
+</div>
+
+{% endblock %}{# page_content #}
