@@ -30,17 +30,6 @@ def login():
             flash('Incorrect Email or Password')
     return render_template('login.html', form=form)
 
-# @main.route('/')
-# @login_required
-# def index():
-#     roster = getRoster(session.get('mfl_id'))
-#     teamname = session.get('team_name')
-#     logo_url = session.get('name').upper().replace(" ", "_") + "_2015.png"
-#     return render_template('index.html', 
-#                             roster=roster,
-#                             teamname=teamname,
-#                             logo_url=logo_url)
-
 @main.route('/')
 @login_required
 def index():
@@ -141,11 +130,6 @@ def keepers():
             
             return redirect(url_for('main.keepers'))
 
-        
-        # Verify tags < 2 and 1 of each tag type
-        # Apply the data for the keepers
-        # 
-
 @main.route('/tags')
 @login_required
 def tags():
@@ -221,7 +205,6 @@ def bidding():
             franPlayerBid = int(request.form.get('franPlayerBid')) or 0
             transPlayerBid = int(request.form.get('transPlayerBid')) or 0
 
-
             if not franPlayerBid and not transPlayerBid:
                 flash("You didn't enter a bid for either player.")
                 return redirect(url_for('main.bidding'))
@@ -257,11 +240,6 @@ def bidding():
                 
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
-                # return render_template('bidding.html', 
-                #     transPlayer=transPlayer,
-                #     franPlayer=franPlayer,
-                #     biddingOn=biddingOn
-                #     )
     else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
         return redirect(url_for('main.match'))
 
@@ -368,3 +346,9 @@ def matchFran():
     franchiseDecisionMade.bools = True
     db.session.commit()
     return redirect(url_for('main.match'))
+
+@main.route('/draft_order', methods=['GET'])
+@login_required
+def draft_order():
+    draftPicks = DraftPick.query.all()
+    return render_template('draftOrder.html', draftPicks=draftPicks)
