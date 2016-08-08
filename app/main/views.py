@@ -7,7 +7,7 @@ from ..models import Owner, Player, Bid, DraftPick, States
 from .. import db
 from sqlalchemy.sql.expression import or_
 import sys
-from ..bidding import highestBid
+# from ..bidding import highestBid
 from operator import attrgetter
 
 image_year = "_2016.png"
