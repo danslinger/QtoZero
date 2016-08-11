@@ -82,7 +82,8 @@ def stopBid():
 
 
 def getBids(player):
-    return Bid.query.filter(Bid.player_id == player.id).all()
+    allBids = Bid.query.filter(Bid.player_id == player.id).all()
+    return [b for b in allBids if b.amount > 0]
 
 def highestBid(player, tagType, bids):
     if len(bids) == 1: #There is only 1 bid
