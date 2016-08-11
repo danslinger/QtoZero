@@ -33,8 +33,10 @@
                     </tr>
                 </tbody>
             </table>
-            
-            {% if transPlayer.owner.id == session.get('owner').get('id') %}
+            {% if transitionDecisionMade and transPlayer.previous_owner_id == session.get('owner').get('id') %}
+                    <p>You made your choice for this player all ready.</p>
+            {# {% endif %} #}
+            {% elif transPlayer.owner.id == session.get('owner').get('id') %}
                 <form method="POST" action="{{url_for('main.matchTrans') }}" role="form">
                     <div class="form-group">
                     <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
@@ -46,9 +48,7 @@
                     </div>
                 </form>
             {% endif %}
-            {% if transitionDecisionMade and transPlayer.previous_owner_id == session.get('owner').get('id') %}
-                    <p>You made your choice for this player all ready.</p>
-            {% endif %}
+            
         {% endif %} {# If the player had no bids #}
     </div>
     <div class="col-sm-6 col-xs-12">
@@ -76,8 +76,10 @@
                     </tr>
                 </tbody>
             </table>
-        
-            {% if franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
+            {% if franchiseDecisionMade and franPlayer.previous_owner_id == session.get('owner').get('id') %}
+                <p>You made your choice for this player all ready.</p>
+            {# {% endif %} #}
+            {% elif franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
                 <form method="POST" action="{{url_for('main.matchFran') }}">
                     <div class="form-group">
                     <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
@@ -89,9 +91,7 @@
                     </div>
                 </form>
             {% endif %}
-            {% if franchiseDecisionMade and franPlayer.previous_owner_id == session.get('owner').get('id') %}
-                <p>You made your choice for this player all ready.</p>
-            {% endif %}
+            
         {% endif %}
     </div>
     </div>
