@@ -279,16 +279,41 @@ def match():
         # bidding.py stopBid() should have run, so can get winning bid via queries
         winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
         winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
-        if not franchiseDecisionMade:
+        
+        if franchiseDecisionMade:
+            if franPlayer.previous_owner_id != franPlayer.owner.id:
+                winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
+                highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+            else:
+                highestFranPick = None
+        else:
             winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
             highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+
+        if transitionDecisionMade:
+            if transPlayer.previous_owner_id != transPlayer.owner.id:
+                winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+                highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+            else:
+                highestFranPick = None
         else:
-            highestFranPick = None
-        if not transitionDecisionMade:
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
             highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-        else:
-            highestTransPick = None
+
+
+
+
+
+        # if not franchiseDecisionMade or franPlayer.previous_owner_id != franPlayer.owner.id:
+        #     winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
+        #     highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+        # else:
+        #     highestFranPick = None
+        # if not transitionDecisionMade or transPlayer.previous_owner_id != transPlayer.owner.id:
+        #     winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
+        #     highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+        # else:
+        #     highestTransPick = None
         
         return render_template('match.html',
                             transPlayer=transPlayer,
