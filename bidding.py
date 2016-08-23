@@ -90,29 +90,10 @@ def highestBid(player, tagType, bids):
         winningBid = bids[0]
         winnningBid.winningAmount = winningBid.amount
     else:
-        #need to find the highest bid, then modify it so it is the second highest bid + 1
-        #unless the second highest == highest, then it is just the highest
-    
         highAmount = max(bids, key=attrgetter('amount')).amount
-
-        # allBidAmounts = [b.amount for b in bids]
-        # highBidCount = allBidAmounts.count(highAmount)
-        # high bid amount is the amount.  No second highest + 1
         winningBids = [b for b in bids if b.amount == highAmount]
         winningBid = getBidWithHighestPick(winningBids, tagType)  
         
-                # OLD cases to handle are: single high bid, multiple high bid
-        
-                # if highBidCount == 1: #single high bid
-                #     allBidAmounts.remove(highAmount)
-                #     secondHighAmount = max(allBidAmounts)
-                #     winningBid = next(b for b in bids if b.amount == highAmount)
-                #     winningBid.winningAmount = secondHighAmount + 1
-                # else: #multiple high bid
-                #     winningBids = [b for b in bids if b.amount )== highAmount]
-        #     winningBid = getBidWithHighestPick(winningBids, tagType)
-        #     winningBid.winningAmount = highAmount
-
         db.session.commit()
     return winningBid
 

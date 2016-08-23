@@ -295,7 +295,7 @@ def match():
                 winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
                 highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
             else:
-                highestFranPick = None
+                highestTransPick = None
         else:
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
             highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
@@ -320,8 +320,8 @@ def match():
                             franPlayer=franPlayer,
                             tBid=winningTransBid,
                             fBid=winningFranBid,
-                            highestFranPick=highestFranPick,
-                            highestTransPick=highestTransPick,
+                            highestFranPick=None,
+                            highestTransPick=None,
                             franchiseDecisionMade=franchiseDecisionMade,
                             transitionDecisionMade=transitionDecisionMade,
                             )
