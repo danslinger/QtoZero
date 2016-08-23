@@ -283,22 +283,26 @@ def match():
         if franchiseDecisionMade:
             if franPlayer.previous_owner_id != franPlayer.owner.id:
                 winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-                highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+                # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+                highestFranPick = None
             else:
                 highestFranPick = None
         else:
             winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-            highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+            # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+            highestFranPick = None
 
         if transitionDecisionMade:
             if transPlayer.previous_owner_id != transPlayer.owner.id:
                 winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-                highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+                # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+                highestTransPick = None
             else:
                 highestTransPick = None
         else:
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-            highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+            # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+            highestTransPick = None
 
 
 
@@ -320,8 +324,8 @@ def match():
                             franPlayer=franPlayer,
                             tBid=winningTransBid,
                             fBid=winningFranBid,
-                            highestFranPick=None,
-                            highestTransPick=None,
+                            highestFranPick=highestFranPick,
+                            highestTransPick=highestTransPick,
                             franchiseDecisionMade=franchiseDecisionMade,
                             transitionDecisionMade=transitionDecisionMade,
                             )
