@@ -93,7 +93,7 @@ class Player(db.Model):
         self.name = self.name_swap(mfl_dict.get('name')) #Expects last,first
         self.team = mfl_dict.get('team')
         self.mfl_id = mfl_dict.get('id')
-        self.position = mfl_dict.get('p0osition')
+        self.position = mfl_dict.get('position')
         self.nfl_id = mfl_dict.get('nfl_id')
         self.rotoworld_id = mfl_dict.get('rotoworld_id')
         self.stats_id = mfl_dict.get('stats_id')
@@ -136,7 +136,6 @@ class Player(db.Model):
 
     def setMFLTeamFromMFLID(self, mfl_id):
         return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
-
 
     def name_swap(self, name_str):
         tmp = name_str.split(', ')
