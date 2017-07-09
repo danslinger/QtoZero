@@ -20,7 +20,7 @@
 <tbody>
     {% for owner in owners %}
     <tr>
-        <td><img src="{{ url_for('static', filename='images/')}}{{ owner.name.upper().replace(' ', '_')}}_2016.png" style="width: 100%;"></td>
+        <td><img src="{{ image_host }}{{ owner.image_name}}" style="width: 100%;"></td>
         <td>{{owner.name}}</td>
         <td>{{owner.email}}</td>
         <td class="text-nowrap">{{owner.phone}}</td>

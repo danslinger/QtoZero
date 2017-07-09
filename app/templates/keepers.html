@@ -4,7 +4,7 @@
 {% block page_content %}
 
 <div class="col-sm-9 col-xs-12">
-<img src="{{ url_for('static', filename='images/')}}{{ logo_url }}" width="400">
+<img src="{{ logo_url }}" width="400">
 {% block messages %}{{super()}}{% endblock%}
 {% if not keeperSet %}   
 <div class="row">
@@ -14,18 +14,20 @@
 
             <div class="form-group">
                 {% for player in roster|sort(reverse=True, attribute='salary') %}
-                {% if player.contractStatus not in ['R0'] %}
+                {% if player.contractStatus != "R" %}
                 <div class="input-group">
                 {# <div class="row"> #}
                         <div class="input-group-addon playerName" >{{player.name}}</div>
                         <div class="input-group-addon playerItem" >{{player.team}}</div>
                         <div class="input-group-addon playerItem" >${{player.salary}}</div>
-                        <div class="input-group-addon playerStatus" >{{player.contractStatus}}</div>
+                        <div class="input-group-addon playerStatus" >{% if player.contractStatus == "K" and player.contractYear == "0" %}{{player.contractStatus}}(0){% else %}{{ player.contractStatus }}{% endif %}</div>
 
                         <select id="{{player.id}}" name="{{player.id}}"class="form-control">
                             <option selected=""></option>
-                            {% if player.contractStatus in ["S1", "K0"] %}
+                            {% if player.contractStatus == "S" or (player.contractStatus == "K" and player.contractYear == "0") %}
+                            {% if not (player.contractStatus == "K" and player.contractYear == "0") %}
                             <option value="K">Keep</option>
+                            {% endif %}}
                             <option value="SFRAN">Super Franchise</option>
                             <option value="FRAN">Franchise</option>
                             <option value="TRANS">Transition</option>
@@ -50,23 +52,23 @@
         <h4>Super Franchise Tag Contract Values</h4>
         <ul class="list-group">
             <li class="list-group-item">
-                <span class="badge">$43</span>
+                <span class="badge">$45</span>
                 Quarterback
             </li>
             <li class="list-group-item">
-                <span class="badge">$39</span>
+                <span class="badge">$42</span>
                 Running Back
             </li>
             <li class="list-group-item">
-                <span class="badge">$37</span>
+                <span class="badge">$39</span>
                 Wide Receiver
             </li>
             <li class="list-group-item">
-                <span class="badge">$34</span>
+                <span class="badge">$25</span>
                 Tight End
             </li>
             <li class="list-group-item">
-                <span class="badge">$10</span>
+                <span class="badge">$8</span>
                 Defense
             </li>
             <li class="list-group-item">

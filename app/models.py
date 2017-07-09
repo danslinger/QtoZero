@@ -1,6 +1,11 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import UserMixin
+from sqlalchemy.sql.expression import or_,and_
 from . import db, login_manager
+import requests, json
+
+league_id = 31348
+url = 'http://www55.myfantasyleague.com/2017/export'
 
 class Owner(UserMixin, db.Model):
     __tablename__ = 'owners'
@@ -16,7 +21,7 @@ class Owner(UserMixin, db.Model):
     keeperSet = db.Column(db.Boolean, default=False)
     draftPicks = db.relationship('DraftPick', backref='owner', lazy='dynamic')
     madeBid = db.Column(db.Boolean, default=False)
-
+    image_name = db.Column(db.String(128))
 
     @property
     def password(self):
@@ -30,7 +35,7 @@ class Owner(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def keepers(self):
-        return self.players.filter_by(contractStatus="K1").count()
+        return self.players.filter(and_(Player.contractStatus=="K", Player.contractYear == "1")).count()
         # write a query to return the number of keepers on a roster
     def to_dict(self):
         d = {
@@ -43,7 +48,8 @@ class Owner(UserMixin, db.Model):
             'twitter': self.twitter,
             'keeperCount': self.keepers(),
             'keeperSet': self.keeperSet,
-            'madeBid': self.madeBid
+            'madeBid': self.madeBid,
+            'image_name': self.image_name,
         }
         return d
     def hasPick(self, rd):
@@ -108,6 +114,20 @@ class Player(db.Model):
         self.contractStatus = contractInfo.get('contractStatus')
         self.status = contractInfo.get('status') or "FA"
         self.salary = contractInfo.get('salary') 
+
+    def ResetContractInfo(self, currentOwnerID):
+        payload = {'TYPE': 'rosters',
+                    'JSON': 1,
+                    'L': league_id,
+                    'FRANCHISE': currentOwnerID
+                  }
+        r = requests.get(url, params=payload)
+        roster = json.loads(r.content)
+        for data in roster['rosters']['franchise']['player']:
+            if data.get('id') == self.mfl_id:
+                self.updateContractInfo(data)
+                self.tag = None
+                break
 
     def updateRosterInfo(self, contractInfo, mfl_id):
         '''

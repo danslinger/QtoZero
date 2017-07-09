@@ -5,12 +5,14 @@ from . import main
 from .forms import LoginForm
 from ..models import Owner, Player, Bid, DraftPick, States
 from .. import db
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import or_,and_
 import sys
 # from ..bidding import highestBid
 from operator import attrgetter
 
-image_year = "_2016.png"
+image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
+_TAGS = ['FRAN', 'SFRAN', 'TRANS']
+
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -34,10 +36,8 @@ def login():
 @login_required
 def index():
     roster = Owner.query.filter_by(mfl_team_id=session['mfl_id']).first().players
-    # teamname = session.get('team_name')
     teamname = session.get('owner').get('team_name')
-    # logo_url = session.get('name').upper().replace(" ", "_") + "_2015.png"
-    logo_url = session.get('owner').get('name').upper().replace(" ", "_") + image_year
+    logo_url = image_host + session.get('owner').get('image_name')
     return render_template('index.html', 
                             roster=roster,
                             teamname=teamname,
@@ -52,23 +52,25 @@ def logout():
 @login_required
 def contacts():
     owners = Owner.query.all()
-    return render_template('contacts.html', owners=owners)
+    return render_template('contacts.html', 
+                            owners=owners,
+                            image_host=image_host)
 
 
 @main.route('/keepers', methods=['GET', 'POST'])
 @login_required
 def keepers():
-    return redirect(url_for('main.tags'))
+    # return redirect(url_for('main.tags'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     error = False
-    _TAGS = ['FRAN', 'SFRAN', 'TRANS']
-    _K = ['K2', 'K1']
 
     if request.method == 'GET':
         if current_owner.keeperSet == True:
-            roster = Player.query.filter_by(owner=current_owner).filter(or_(Player.contractStatus.in_(_K), Player.tag.in_(_TAGS))).all()
+            roster = Player.query.filter_by(owner=current_owner).filter(
+                      or_(and_(Player.contractStatus == "K", Player.contractYear == "2"),
+                          Player.tag.in_(_TAGS))).all()
             teamname = session.get('team_name')
-            logo_url = session.get('name').upper().replace(" ", "_") + image_year
+            logo_url = image_host + session.get('owner').get('image_name')
             return render_template('keepers.html', 
                             roster=roster,
                             teamname=teamname,
@@ -77,8 +79,7 @@ def keepers():
         else:
             roster = Owner.query.filter_by(mfl_team_id=session.get('mfl_id')).first().players
             teamname = session.get('team_name')
-            logo_url = session.get('name').upper().replace(" ", "_") + image_year
-            # flash("This is a test flash")
+            logo_url = image_host + session.get('owner').get('image_name')
             return render_template('keepers.html', 
                             roster=roster,
                             teamname=teamname,
@@ -94,9 +95,11 @@ def keepers():
         postedTransCount = sum(1 for x in players.values() if x == 'TRANS')
         postedFranCount = sum(1 for x in players.values() if x == 'FRAN')
         postedSFranCount = sum(1 for x in players.values() if x == 'SFRAN')
+        print (currentKeeperCount, postedKeeperCount)
         if currentKeeperCount + postedKeeperCount > 2:
-            flash("Too many keepers were selected")
-            error = True
+            if postedKeeperCount > 0:  # case where owner somehow has 3 keepers... me in 2017... Blake Bortels?  Idiot. 
+                flash("Too many keepers were selected")
+                error = True
         if postedSFranCount + postedTransCount + postedFranCount > 2:
             flash("Too many tags.  At most 2 tags from Super Franchise, Franchise or Transition")
             error = True
@@ -118,16 +121,16 @@ def keepers():
                 if tag in ['TRANS', 'FRAN', 'SFRAN']:
                     p.tag = tag
                     p.contractStatus = tag
-                    db.session.commit()
+                    # db.session.commit()
                 elif tag == "K":
-                    p.contractStatus = "K2"
-                    p.salary = p.salary + 5
-                    db.session.commit()
+                    p.contractStatus = "K"
+                    p.contractYear = "2"
+                    # p.salary = p.salary + 5
+                    # db.session.commit()
             current_owner.keeperSet = True
             db.session.commit()
             session['owner'] = current_owner.to_dict()
 
-            
             return redirect(url_for('main.keepers'))
 
 @main.route('/tags')
@@ -152,22 +155,26 @@ def tags():
 @login_required
 def reset_keepers():
     #get current owner
-    _TAGS = ['FRAN', 'SFRAN', 'TRANS']
     current_owner = Owner.query.get(session.get('owner').get('id'))
     #get players that have tags and reset
     tagged_players = Player.query.filter_by(owner=current_owner).filter(Player.tag.in_(_TAGS)).all()
     for p in tagged_players:
-        p.tag = ""
-        p.contractStatus = "S1"
-        db.session.commit()
+        p.ResetContractInfo(current_owner.mfl_team_id)
+        # p.tag = None
+        # p.contractStatus = "S"
+        # p.contractYear = "0"
+        # db.session.commit()
     #get players that have K2 and reset
-    k2s = Player.query.filter_by(owner=current_owner).filter(Player.contractStatus.in_(["K2"])).all()
+    k2s = Player.query.filter_by(owner=current_owner).filter(and_(Player.contractStatus == "K", Player.contractYear == "2")).all()
     for p in k2s:
-        p.contractStatus = "S1"
-        p.salary = p.salary - 5
-        db.session.commit()
+        p.ResetContractInfo(current_owner.mfl_team_id)
+        # p.contractStatus = "S"
+        # p.contractYear = "0"
+        # p.salary = p.salary - 5
+        # db.session.commit()
     current_owner.keeperSet = False
     db.session.commit()
+    session['owner'] = current_owner.to_dict()
     return redirect(url_for('main.keepers'))
 
 @main.route('/bidding', methods=['GET', 'POST'])
@@ -241,7 +248,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        return redirect(url_for('main.match'))
+        return "Bidding is off right now"
+        # return redirect(url_for('main.match'))
 
 @main.route('/reset_bids', methods=['POST'])
 @login_required
@@ -303,21 +311,6 @@ def match():
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
             # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
             highestTransPick = None
-
-
-
-
-
-        # if not franchiseDecisionMade or franPlayer.previous_owner_id != franPlayer.owner.id:
-        #     winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-        #     highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-        # else:
-        #     highestFranPick = None
-        # if not transitionDecisionMade or transPlayer.previous_owner_id != transPlayer.owner.id:
-        #     winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-        #     highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-        # else:
-        #     highestTransPick = None
         
         return render_template('match.html',
                             transPlayer=transPlayer,
@@ -346,7 +339,6 @@ def matchTrans():
     else: #release player
         transPlayer.updateOwner(bidding_owner.id)
         highestTransPick.updatePick(current_owner.id)
-
 
     transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar()
     transitionDecisionMade.bools = True
