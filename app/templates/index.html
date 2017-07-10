@@ -1,52 +1,137 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title%}Calvinball Fantasy Football{% endblock %}
+{% block scripts %}
+{{ super() }}
+<!-- <script src="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.9.1/fullcalendar.min.js"></script> -->
+<!-- <script type="text/javascript">
+    $(document).ready(function() {
+
+    // page is now ready, initialize the calendar...
+    var date = new Date();
+    var d = date.getDate();
+    var m = date.getMonth();
+    var y = date.getFullYear();
+  
+    $('#calendar').fullCalendar({
+        header: {
+          left: '',
+          center: 'title',
+          right: 'month,agendaWeek,agendaDay'
+        },
+        // fixedWeekCount: false,
+        editable: false,
+        events: [
+          {
+            title: 'Round 1 Bidding',
+            start: new Date(y, m, 8),
+            end: new Date(y, m, 10, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 1 Owner Match',
+            start: new Date(y, m, 10, 20),
+            end: new Date(y, m, 11, 20),
+            allDay: false
+          },
+          {
+            title: 'Round 2 Bidding',
+            start: new Date(y, m, 11, 20),
+            end: new Date(y, m, 13, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 2 Owner Match',
+            start: new Date(y, m, 13, 20),
+            end: new Date(y, m, 14, 20),
+            allDay: false
+          },
+          {
+            title: 'Round 3 Bidding',
+            start: new Date(y, m, 14, 20),
+            end: new Date(y, m, 16, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 3 Owner Match',
+            start: new Date(y, m, 16, 20),
+            end: new Date(y, m, 17, 20,0),
+            allDay: false
+          },
+          {
+            title: 'Round 4 Bidding',
+            start: new Date(y, m, 17, 20),
+            end: new Date(y, m, 19, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 4 Owner Match',
+            start: new Date(y, m, 19, 20),
+            end: new Date(y, m, 20, 20),
+            allDay: false
+          },
+          {
+            title: 'Round 5 Bidding',
+            start: new Date(y, m, 20, 20),
+            end: new Date(y, m, 22, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 5 Owner Match',
+            start: new Date(y, m, 22, 20),
+            end: new Date(y, m, 23, 20,0),
+            allDay: false
+          },
+          {
+            title: 'Round 6 Bidding',
+            start: new Date(y, m, 23, 20),
+            end: new Date(y, m, 25, 20),
+            allDay: false,
+            backgroundColor: '#bf5a16'
+          },
+          {
+            title: 'Round 6 Owner Match',
+            start: new Date(y, m, 25, 20),
+            end: new Date(y, m, 26, 20,0),
+            allDay: false
+          },
+        ]
+      });
+    })
+        
+</script> -->
+
+{% endblock %} <!-- scripts -->
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.9.1/fullcalendar.min.css">
+<link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.9.1/fullcalendar.print.css ">
+{% endblock%}
 {% block page_content %}
 
-<div class="col-sm-5">
-<img src="{{ url_for('static', filename='images/')}}{{ logo_url }}" width="400">
+<div class="col-sm-8">
+<img src="{{ logo_url }}" width="400">
 {% block messages %}{{super()}}{% endblock%}
-<h1>Welcome to Calvinball 2016</h1>
-<p>There are currently just a few things that this site take care off.  We are still going to be using myfantasyleague.com for our normal, day to day Calvinball during the National Football League (ne&egrave; NFL) season.  For 2016, if you don't have it all ready, that site is:</p>
-<h4><a href="http://www55.myfantasyleague.com/2016/home/31348">http://www55.myfantasyleague.com/2016/home/31348</a></h4>
-<p>So, what does this site do?  Mainly, two things.
-</p>
-<ol>
-    <li>Select your keepers and tag Super Franchise, Franchise and Transition players</li>
-    <li>Conduct the RFA bidding process one all the appropriate players have been kept/tagged</li>
-</ol>
+<h1>And we're BAAAAAAAAAAAACK.... Calvinball 2017</h1>
+<!-- <div id="calendar"></div> -->
+<p>I'm tired and its getting late so I'm going to try to keep this initial message brief.  So far, not much has changed on this site.  You should see on the Keepers page your current roster.  On that page you'll be able to tag your players and select keepers.  Reminder:  you can use only 2 of the 3 tags, and have a total of 2 keepers.  So if you're a dumb ass and somehow have Blake Bortles as a keeper (looks around... raises hand shamefully...), well, that's one less weapon you have.</p>
 <p>
-    So, its pretty self explanitory.  Go to the keepers tab and select your keepers and tag your players.  If you screw up or want to reconsider, you will be able to do that up until the cutoff date for selecting keepers.  Rule changes and updates were sent out in the <a href="https://docs.google.com/document/d/1K58qZlpAar7uQh9Ds_M_mjCDjILjercW-vBlyG9SQBo/edit?usp=sharing">June Newsletter</a>.  Go there if you have any questions about the rule changes.  
+    So, its pretty self explanitory.  Go to the keepers tab and select your keepers and tag your players.  If you screw up or want to reconsider, you will be able to do that up until the cutoff date for selecting keepers.   
 </p>
 <p>
-    On the Keepers page if you have a keeper from last year, his salary is updated and listed as a K1.  All other salaries listed are the players salaries at the end of the season last year.  If you want to keep a player, the salary this year is $5 more than whats listed, and next year another $5.
+    On the Keepers page if you have a keeper from last year, his salary is updated and listed as a K1.  All other salaries (THIS IS DIFFERENT THIS YEAR!)  listed have ALSO had $5 added to them.  So if you want to keep one of those players, the price you see is the price you get for THIS year.  Then thinking into the future add another $5 for the following year.  A player listed as K(0) can only be tagged, not kepts any further.  Previously tagged players cannot be tagged or kept.
 </p>
 <p>
-    All that said... Danny made this website so if its messed up you can harass him.  If you have any issues, let him know right away.  Don't tell Josh and expect him to be the messenger - tell Danny.  (You can tell Josh too, but he assumes no liablity in passing your message along.)
+    All that said... Danny made this website so if its messed up you can harass him.  If you have any issues, let him know right away.  Don't tell Josh and expect him to be the messenger - tell Danny.  (You can tell Josh too, but he assumes no liablity in passing your message along.)  Again, like last year, I expect mistakes but hopefully less so.  
 </p>
 <p>
-    You have until July 15 to select your keepers and place your tags.  Yeah, that's not too far away.  Deal.  And choose wisely.
+    You have until July 15 to select your keepers and place your tags.  Yeah, that's not too far away.  Deal.  And choose wisely.  If you don't think you can make that date for some reason, please let me know right away.
 </p>
-<!-- <table class="table table-bordered">
-<thead>
-    <tr>
-        <th>Name</th>
-        <th>NFL Team</th>
-        <th>Salary</th>
-        <th>Contract Status</th>
-    </tr>
-</thead>
-<tbody>
-    {% for player in roster|sort(reverse=True, attribute='salary') %}
-    <tr>
-        <td>{{player.name}}</td>
-        <td>{{player.team}}</td>
-        <td>${{player.salary}}</td>
-        <td>{{player.contractStatus}}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table> -->
 
 </div>  
 
