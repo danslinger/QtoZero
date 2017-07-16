@@ -60,7 +60,7 @@ def contacts():
 @main.route('/keepers', methods=['GET', 'POST'])
 @login_required
 def keepers():
-    # return redirect(url_for('main.tags'))
+    return redirect(url_for('main.tags'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     error = False
 
@@ -139,8 +139,8 @@ def tags():
     fplayers = Player.query.filter(Player.tag=="FRAN").all()
     tplayers = Player.query.filter(Player.tag=="TRANS").all()
     sfplayers = Player.query.filter(Player.tag=="SFRAN").all()
-    k2players = Player.query.filter(Player.contractStatus=="K2").all()
-    k1players = Player.query.filter(Player.contractStatus=="K1").all()
+    k2players = Player.query.filter(Player.contractYear=="2").all()
+    k1players = Player.query.filter(and_(Player.contractStatus=="K", Player.contractYear=="1")).all()
 
 
     return render_template('tagged_players.html', 
