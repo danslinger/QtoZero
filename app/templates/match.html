@@ -35,9 +35,9 @@
             </table>
             {% if transitionDecisionMade %}
                 {% if transPlayer.previous_owner_id == session.get('owner').get('id') %}
-                    <p>You made your choice for this player all ready.</p>
+                    <p>You made your choice for this player already.</p>
                 {% else %}
-                    <p>The 2015 owner of this player has made their decision.</p>
+                    <p>The 2016 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif transPlayer.owner.id == session.get('owner').get('id') %}
                 <form method="POST" action="{{url_for('main.matchTrans') }}" role="form">
@@ -81,9 +81,9 @@
             </table>
             {% if franchiseDecisionMade %}
                 {% if franPlayer.previous_owner_id == session.get('owner').get('id') %}
-                <p>You made your choice for this player all ready.</p>
+                <p>You made your choice for this player already.</p>
                 {% else %}
-                <p>The 2015 owner of this player has made their decision.</p>
+                <p>The 2016 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
                 <form method="POST" action="{{url_for('main.matchFran') }}">

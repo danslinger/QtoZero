@@ -4,7 +4,14 @@ from app import db, create_app, login_manager
 import random
 import sys
 from operator import attrgetter
+from SlackBot import SlackBot
+from TaskScheduler import TaskScheduler
+import datetime
 
+bot = SlackBot()
+ts = TaskScheduler()
+timeFormatString = '%A %B %d at %I:%M%p'
+letBotPost = False
 
 def getRandomPlayer(playerType):
     # query for all players of tag==playerType whose finishedBidding is false
@@ -49,16 +56,42 @@ def startBid():
     owners = Owner.query.all()
     for o in owners:
         o.madeBid = False
+    message = ''
+
     tPlayer = getRandomPlayer("TRANS")
-    tPlayer.upForBid = True
+    if tPlayer:
+        tPlayer.upForBid = True
+        States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = False
+        message += 'The transition player now up for bid is {0}.\n'.format(tPlayer.name)
+    else:
+        message += 'There are no transition players up for bid.\n'        
+
     
     fPlayer = getRandomPlayer("FRAN")
-    fPlayer.upForBid = True
+    if fPlayer:
+        fPlayer.upForBid = True
+        States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = False
+        message += 'The franchise player now up for bid is {0}.\n'.format(fPlayer.name)
+    else:
+        message += 'There are no franchise players up for bid.\n'
 
     States.query.filter(States.name == 'biddingOn').scalar().bools = True
-    States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = False
-    States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = False
+
     db.session.commit()
+    # Reset Cron job time
+    
+    stopTime = datetime.datetime.today() + datetime.timedelta(hours=48)
+    stopJob = ts.getJob("STOPBID")
+    ts.setJob(stopJob, stopTime)
+    message += 'Bidding for these players ends '
+    message += stopTime.strftime(timeFormatString)
+
+    #Post Bot Message
+    if letBotPost:
+        bot.postMessage('general', message)
+    else:
+        print message
+
 
 def stopBid():
     # get the tPlayer and fPlayer
@@ -77,6 +110,19 @@ def stopBid():
     tPlayer.finishedBidding = True
     fPlayer.finishedBidding = True
     db.session.commit()
+
+    # Set STARTBID to 24 hours later
+    startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
+    startJob = ts.getJob('STARTBID')
+    ts.setJob(startJob, startTime)
+    message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(startTime.strftime(timeFormatString))
+    message += "  If both are matched or released before then, new players will be available at that time"
+    message += "  I'll send a message when new players are available."
+    if letBotPost:
+        bot.postMessage('general', message)
+    else:
+        print message
+
     
 ##### NEED TO FIGURE OUT OWNER in SESSION.  Force log out? ########
 
@@ -88,7 +134,7 @@ def getBids(player):
 def highestBid(player, tagType, bids):
     if len(bids) == 1: #There is only 1 bid
         winningBid = bids[0]
-        winnningBid.winningAmount = winningBid.amount
+        winningBid.winningAmount = winningBid.amount
     else:
         highAmount = max(bids, key=attrgetter('amount')).amount
         winningBids = [b for b in bids if b.amount == highAmount]
@@ -112,23 +158,35 @@ def getBidWithHighestPick(winningBids, tagType):
     return winningBids[highestPickIndex]
 
 def processBids(player,tag, bids):
+    message = ''
     if bids:
         winningBid = highestBid(player, tag, bids)
         winningBid.winningBid = True
+        message += "{0} has the highest bid on {1} at ${2}".format(Owner.query.get(winningBid.owner_bidding_id).team_name,
+                                                                   player.name,
+                                                                   winningBid.amount
+                                                                   )
     else:
         if tag == 'TRANS':
             amount = 20
             States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = True
+            
         elif tag == 'FRAN':
             amount = 30
             States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = True
+
         winningBid = Bid(player_id=player.id,
                          owner_bidding_id = player.owner.id,
                          amount=amount,
                          )
         winningBid.winningBid = True
+        message = "No one bid on {0}. He is staying put.".format(player.name)
         db.session.add(winningBid)
     db.session.commit()
+    if letBotPost:
+        bot.postMessage('general', message)
+    else:
+        print message
 
 
 if __name__ == '__main__':

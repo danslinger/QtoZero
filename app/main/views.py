@@ -9,6 +9,13 @@ from sqlalchemy.sql.expression import or_,and_
 import sys
 # from ..bidding import highestBid
 from operator import attrgetter
+from SlackBot import SlackBot
+from TaskScheduler import TaskScheduler
+import datetime
+
+bot = SlackBot()
+ts = TaskScheduler()
+letBotPost = False
 
 image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
 _TAGS = ['FRAN', 'SFRAN', 'TRANS']
@@ -209,8 +216,8 @@ def bidding():
 
         if request.method == 'POST':
             # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
-            franPlayerBid = int(request.form.get('franPlayerBid')) or 0
-            transPlayerBid = int(request.form.get('transPlayerBid')) or 0
+            franPlayerBid = int(request.form.get('franPlayerBid') or 0)
+            transPlayerBid = int(request.form.get('transPlayerBid') or 0)
 
             if not franPlayerBid and not transPlayerBid:
                 flash("You didn't enter a bid for either player.")
@@ -248,8 +255,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        return "Bidding is off right now.  Just go back."
-        # return redirect(url_for('main.match'))
+        # return "Bidding is off right now.  Just go back."
+        return redirect(url_for('main.match'))
 
 @main.route('/reset_bids', methods=['POST'])
 @login_required
@@ -291,27 +298,26 @@ def match():
         if franchiseDecisionMade:
             if franPlayer.previous_owner_id != franPlayer.owner.id:
                 winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-                # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-                highestFranPick = None
+                highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+                # highestFranPick = None
             else:
                 highestFranPick = None
         else:
             winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-            # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-            highestFranPick = None
+            highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+            # highestFranPick = None
 
         if transitionDecisionMade:
             if transPlayer.previous_owner_id != transPlayer.owner.id:
                 winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-                # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-                highestTransPick = None
+                highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+                # highestTransPick = None
             else:
                 highestTransPick = None
         else:
             winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-            # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-            highestTransPick = None
-        
+            highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+            # highestTransPick = None
         return render_template('match.html',
                             transPlayer=transPlayer,
                             franPlayer=franPlayer,
@@ -335,14 +341,33 @@ def matchTrans():
     decision = request.form.get('transMatch')
     if decision == 'match': #keep player
         # could do lots of things... but really don't need to do anything
-        pass
+        message = "{0} has decided to keep {1} at a price of ${2}." \
+                  .format(current_owner.team_name,
+                          transPlayer.name,
+                          winningTransBid.amount
+                    )
     else: #release player
         transPlayer.updateOwner(bidding_owner.id)
         highestTransPick.updatePick(current_owner.id)
+        message = "{0} has decided to let {1} take his talents to {2}." \
+                   .format(current_owner.team_name,
+                           transPlayer.name,
+                           bidding_owner.team_name)
 
     transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar()
     transitionDecisionMade.bools = True
     db.session.commit()
+    bothDecisions = getBothDecisions()
+    if bothDecisions == True:
+        # get start bid job and redo it so it happens now
+        startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
+        startJob = ts.getJob('STARTBID')
+        ts.setJob(startJob, startTime)
+
+    if letBotPost:
+        bot.postMessage('general', message)
+    else:
+        print(message)
     return redirect(url_for('main.match'))
 
 @main.route('/matchFran', methods=['POST'])
@@ -358,14 +383,33 @@ def matchFran():
     decision = request.form.get('franMatch')
     if decision == 'match': #keep player
         # could do lots of things... but really don't need to do anything
-        pass
+        message = "{0} has decided to keep {1} at a price of ${2}." \
+                  .format(current_owner.team_name,
+                          franPlayer.name,
+                          winningFranBid.amount
+                    )
     else: #release player
         franPlayer.updateOwner(bidding_owner.id)
         highestFranPick.updatePick(current_owner.id)
+        message = "{0} has decided to let {1} take his talents to {2}." \
+                   .format(current_owner.team_name,
+                           franPlayer.name,
+                           bidding_owner.team_name)
 
     franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar()
     franchiseDecisionMade.bools = True
     db.session.commit()
+    bothDecisions = getBothDecisions()
+    if bothDecisions == True:
+        # get start bid job and redo it so it happens now
+        startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
+        startJob = ts.getJob('STARTBID')
+        ts.setJob(startJob, startTime)
+    
+    if letBotPost:
+        bot.postMessage('general', message)
+    else:
+        print(message)
     return redirect(url_for('main.match'))
 
 @main.route('/draft_order', methods=['GET'])
@@ -373,3 +417,9 @@ def matchFran():
 def draft_order():
     draftPicks = DraftPick.query.all()
     return render_template('draftOrder.html', draftPicks=draftPicks)
+
+def getBothDecisions():
+    franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
+    transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
+    return franchiseDecisionMade and transitionDecisionMade
+
