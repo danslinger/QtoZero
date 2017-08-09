@@ -15,7 +15,7 @@ import datetime
 
 bot = SlackBot()
 ts = TaskScheduler()
-letBotPost = False
+letBotPost = True
 
 image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
 _TAGS = ['FRAN', 'SFRAN', 'TRANS']
