@@ -11,7 +11,7 @@ import datetime
 bot = SlackBot()
 ts = TaskScheduler()
 timeFormatString = '%A %B %d at %I:%M%p'
-letBotPost = False
+letBotPost = True
 
 def getRandomPlayer(playerType):
     # query for all players of tag==playerType whose finishedBidding is false
