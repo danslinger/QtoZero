@@ -5,7 +5,7 @@ class SlackBot(object):
     """docstring for SlackBot"""
     def __init__(self):
         super(SlackBot, self).__init__()
-        self.base_url = "https://slack.com/api"
+        self.base_url = "https://slack.com/api/"
         self.token = os.environ.get('SLACK_TOKEN')
         self.username = 'Clubhouse'
         self.icon_url = 'http://www.qtozero.com/static/images/logo.png'
