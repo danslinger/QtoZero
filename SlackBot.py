@@ -18,6 +18,7 @@ class SlackBot(object):
                    'username': self.username,
                    'icon_url': self.icon_url,
                    }
+        print url, payload
         r = requests.post(url, params=payload)
         data = json.loads(r.content)
         # So, should really be doing error checking here,
