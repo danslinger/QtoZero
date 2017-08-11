@@ -10,7 +10,7 @@ class SlackBot(object):
         self.username = 'Clubhouse'
         self.icon_url = 'http://www.qtozero.com/static/images/logo.png'
 
-    def postMessage(channel, message):
+    def postMessage(self,channel, message):
         url = self.base_url + 'chat.postMessage'
         payload = {'token': self.token,
                    'channel': channel,
