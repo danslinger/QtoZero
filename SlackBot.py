@@ -5,7 +5,7 @@ class SlackBot(object):
     """docstring for SlackBot"""
     def __init__(self):
         super(SlackBot, self).__init__()
-        self.base_url = "https://slack.com/api/"
+        self.base_url = "http://slack.com/api/"
         self.token = os.environ.get('SLACK_TOKEN')
         self.username = 'Clubhouse'
         self.icon_url = 'http://www.qtozero.com/static/images/logo.png'
@@ -18,9 +18,17 @@ class SlackBot(object):
                    'username': self.username,
                    'icon_url': self.icon_url,
                    }
-        print url, payload
-        r = requests.post(url, params=payload)
+
+        r = requests.get(url, params=payload)
         data = json.loads(r.content)
+        with open('BotLog.txt', 'w') as f:
+            f.write(url + '\n\n')
+            json.dump(payload, f)
+            f.write('\n\n')
+            json.dump(data, f)
+            f.write('\n\n')
+            f.write(r.url)
+
         # So, should really be doing error checking here,
         # but I'm skipping it for now.
 

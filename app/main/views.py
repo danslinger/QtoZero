@@ -298,8 +298,8 @@ def match():
         if franchiseDecisionMade:
             if franPlayer.previous_owner_id != franPlayer.owner.id:
                 winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-                highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-                # highestFranPick = None
+                # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+                highestFranPick = None
             else:
                 highestFranPick = None
         else:
@@ -310,8 +310,8 @@ def match():
         if transitionDecisionMade:
             if transPlayer.previous_owner_id != transPlayer.owner.id:
                 winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-                highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-                # highestTransPick = None
+                # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+                highestTransPick = None
             else:
                 highestTransPick = None
         else:
