@@ -11,7 +11,7 @@ import sys
 from operator import attrgetter
 from SlackBot import SlackBot
 from TaskScheduler import TaskScheduler
-import datetime
+import datetime, subprocess
 
 bot = SlackBot()
 ts = TaskScheduler()
@@ -360,9 +360,12 @@ def matchTrans():
     bothDecisions = getBothDecisions()
     if bothDecisions == True:
         # get start bid job and redo it so it happens now
-        startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
-        startJob = ts.getJob('STARTBID')
-        ts.setJob(startJob, startTime)
+        # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
+        # startJob = ts.getJob('STARTBID')
+        # ts.setJob(startJob, startTime)
+
+        subprocess.call(['/var/www/Calvinball/Calvinball/venv/bin/python2', '/var/www/Calvinball/Calvinball/bidding.py', 'startBid'])
+
 
     if letBotPost:
         bot.postMessage('general', message)
