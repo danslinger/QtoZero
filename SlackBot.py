@@ -21,7 +21,7 @@ class SlackBot(object):
 
         r = requests.get(url, params=payload)
         data = json.loads(r.content)
-        with open('BotLog.txt', 'w') as f:
+        with open('~/BotLog.txt', 'w') as f:
             f.write(url + '\n\n')
             json.dump(payload, f)
             f.write('\n\n')

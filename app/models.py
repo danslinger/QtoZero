@@ -22,6 +22,7 @@ class Owner(UserMixin, db.Model):
     draftPicks = db.relationship('DraftPick', backref='owner', lazy='dynamic')
     madeBid = db.Column(db.Boolean, default=False)
     image_name = db.Column(db.String(128))
+    two_qbs = db.Column(db.Integer, default=0)
 
     @property
     def password(self):
