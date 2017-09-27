@@ -89,7 +89,7 @@ def getWeekNumber(today=None):
 
 if __name__ == '__main__':
     app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
-    if sys.argv[1]:
+    if len(sys.argv) > 1:
         week = sys.argv[1]
     else:
         week = int(getWeekNumber()) - 1  #getWeekNumber gets current week.  We want last weeks 
