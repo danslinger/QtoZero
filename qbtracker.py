@@ -89,7 +89,10 @@ def getWeekNumber(today=None):
 
 if __name__ == '__main__':
     app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
-    week = int(getWeekNumber()) - 1  #getWeekNumber gets current week.  We want last weeks number
+    if sys.argv[1]:
+        week = sys.argv[1]
+    else:
+        week = int(getWeekNumber()) - 1  #getWeekNumber gets current week.  We want last weeks 
     startingLineups = getStartingLineups(url, league_id, week)
     message = ""
     for team_id, players in startingLineups.iteritems():
