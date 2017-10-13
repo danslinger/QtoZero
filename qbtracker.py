@@ -94,7 +94,7 @@ if __name__ == '__main__':
     else:
         week = int(getWeekNumber()) - 1  #getWeekNumber gets current week.  We want last weeks 
     startingLineups = getStartingLineups(url, league_id, week)
-    message = "QB Tracker for Week " + week 
+    message = "QB Tracker for Week " + week + "\n\n"
     for team_id, players in startingLineups.iteritems():
         numberQBPlayed = qbCount(players)
         team = Owner.query.filter_by(mfl_team_id=team_id).first()
