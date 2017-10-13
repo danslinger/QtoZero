@@ -1,5 +1,6 @@
 import requests, json
 import os
+import tokens
 
 class SlackBot(object):
     """docstring for SlackBot"""
@@ -11,9 +12,9 @@ class SlackBot(object):
         self.getSlackToken()
 
     def getSlackToken(self):
-        with open('.app_tokens') as f:
-            data = json.load(f)
-        self.token = data['slack_token']
+        # with open('.app_tokens') as f:
+        #     data = json.load(f)
+        self.token = tokens.tokens['slack_token']
 
     def postMessage(self,channel, message):
         url = self.base_url + 'chat.postMessage'
