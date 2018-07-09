@@ -1,0 +1,32 @@
+#mainContent { padding-top: 70px; }
+
+.playerName {
+	width: 30%;
+	min-width: 160px;
+	text-align: left;
+}
+
+.playerStatus {
+	min-width: 50px;
+
+}
+
+.playerItem {
+	min-width: 70px;
+}
+
+.myBrandImg {
+
+	width:48px;
+	height:48px;
+	background-size: 48px 48px;
+	background-repeat: 
+	no-repeat;
+	padding-left:50px; 
+	padding-bottom:10px;
+}
+
+.myBrand {
+	font-size: 1.4em;
+	vertical-align: middle;
+}
