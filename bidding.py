@@ -11,7 +11,7 @@ import datetime
 bot = SlackBot()
 ts = TaskScheduler()
 timeFormatString = '%A %B %d at %I:%M%p'
-letBotPost = True
+letBotPost = False
 
 def getRandomPlayer(playerType):
     # query for all players of tag==playerType whose finishedBidding is false
@@ -30,6 +30,7 @@ def startBid():
     franchiseDecisionMade = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
     transitionDecisionMade = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
 
+    print "Starting Bid"
     if tPlayer: #not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
         if not transitionDecisionMade:
@@ -58,6 +59,7 @@ def startBid():
         o.madeBid = False
     message = ''
 
+    print "Getting Trans"
     tPlayer = getRandomPlayer("TRANS")
     if tPlayer:
         tPlayer.upForBid = True
@@ -66,6 +68,7 @@ def startBid():
     else:
         message += 'There are no transition players up for bid.\n'        
 
+    print "Getting FRAN"
     
     fPlayer = getRandomPlayer("FRAN")
     if fPlayer:
@@ -77,14 +80,15 @@ def startBid():
 
     States.query.filter(States.name == 'biddingOn').scalar().bools = True
 
+    print fPlayer, tPlayer
     db.session.commit()
     # Reset Cron job time
     
-    stopTime = datetime.datetime.today() + datetime.timedelta(hours=48)
-    stopJob = ts.getJob("STOPBID")
-    ts.setJob(stopJob, stopTime)
-    message += 'Bidding for these players ends '
-    message += stopTime.strftime(timeFormatString)
+    # stopTime = datetime.datetime.today() + datetime.timedelta(hours=48)
+    # stopJob = ts.getJob("STOPBID")
+    # ts.setJob(stopJob, stopTime)
+    # message += 'Bidding for these players ends '
+    # message += stopTime.strftime(timeFormatString)
 
     #Post Bot Message
     if letBotPost:
@@ -112,9 +116,9 @@ def stopBid():
     db.session.commit()
 
     # Set STARTBID to 24 hours later
-    startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
-    startJob = ts.getJob('STARTBID')
-    ts.setJob(startJob, startTime)
+    # startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
+    # startJob = ts.getJob('STARTBID')
+    # ts.setJob(startJob, startTime)
     message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(startTime.strftime(timeFormatString))
     message += "  If both are matched or released before then, new players will be available at that time"
     message += "  I'll send a message when new players are available."
@@ -144,27 +148,43 @@ def highestBid(player, tagType, bids):
     return winningBid
 
 def getBidWithHighestPick(winningBids, tagType):
-    if tagType == "FRAN":
-        rd = 1
+    highestDraftPick = min(winningBids, key=attrgetter('draftPick')) or None
+    if highestDraftPick is None:
+        return winningBids[0] #For now, just whoever put their bid in first
     else:
-        rd = 2
-    owners = [bid.owner_bidding for bid in winningBids]
-    # print owners
-    picksList = []
-    for owner in owners:
-        picksList.append(owner.draftPicks.filter(DraftPick.draftRound==rd).all())
-    picks = [pick for pks in picksList for pick in pks] #flattens list
-    highestPickIndex = picks.index(min(picks, key=attrgetter('pickInRound')))
-    return winningBids[highestPickIndex]
+        return winningBids[winningBids.index(highestDraftPick)]
+    
+    # Old way
+    # if tagType == "FRAN":
+    #     rd = 1
+    # else:
+    #     rd = 2
+    # owners = [bid.owner_bidding for bid in winningBids]
+    # picksList = []
+    # for owner in owners:
+    #     picksList.append(owner.draftPicks.filter(DraftPick.draftRound==rd).all())
+    # picks = [pick for pks in picksList for pick in pks] #flattens list
+    # highestPickIndex = picks.index(min(picks, key=attrgetter('pickInRound')))
+    # return winningBids[highestPickIndex]
 
 def processBids(player,tag, bids):
     message = ''
     if bids:
         winningBid = highestBid(player, tag, bids)
         winningBid.winningBid = True
-        message += "{0} has the highest bid on {1} at ${2}".format(Owner.query.get(winningBid.owner_bidding_id).team_name,
+        if winningBid.bounty is True:
+            if tag == 'TRANS':
+                bountyString = "$15 FAAB"
+            else:
+                bountyString = "$10 CAB"
+        else:
+            bountyString = "Pick {0} in the {1} round".format(winningBid.draftPick, "first" if tag == "FRAN" else "second")
+
+        message += "{0} has the highest bid on {1} at ${2} and will give up {3} if the bid is not matched"\
+                                                                  .format(Owner.query.get(winningBid.owner_bidding_id).team_name,
                                                                    player.name,
-                                                                   winningBid.amount
+                                                                   winningBid.amount,
+                                                                   bountyString
                                                                    )
     else:
         if tag == 'TRANS':

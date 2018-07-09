@@ -3,9 +3,11 @@ from flask.ext.login import UserMixin
 from sqlalchemy.sql.expression import or_,and_
 from . import db, login_manager
 import requests, json
+from tokens import tokens
 
 league_id = 31348
-url = 'http://www55.myfantasyleague.com/2017/export'
+url = 'http://www55.myfantasyleague.com/2018/export'
+api_token = tokens['mfl_token']
 
 class Owner(UserMixin, db.Model):
     __tablename__ = 'owners'
@@ -120,7 +122,8 @@ class Player(db.Model):
         payload = {'TYPE': 'rosters',
                     'JSON': 1,
                     'L': league_id,
-                    'FRANCHISE': currentOwnerID
+                    'FRANCHISE': currentOwnerID,
+                    'APIKEY': api_token,
                   }
         r = requests.get(url, params=payload)
         roster = json.loads(r.content)
@@ -134,22 +137,24 @@ class Player(db.Model):
         '''
         contractInfo contains a dictionary in the form:
         {
-            "contractYear": "2015-2016",
-            "contractStatus": "K1",
+            "contractYear": "2" # Josh changed this to be the total years of the contract, which messed me up and is stupid
+            "contractStatus": "K", # or T or F or S
             "status": "ROSTER",
             "id": "11175",
             "salary": "15"
+            "contractInfo": 1 # represents the years remaining on the contract
         }
         mfl_id is the mfl_id of the owner.  Need to take this value and find
         the owner.id and assign that to the Player.mfl_team (the foreign key is to owner.id)
 
         **maybe change mfl_team to owner NOPE, because of the backref owner**
         '''
-        self.contractYear = contractInfo.get('contractYear')
+        self.contractYear = contractInfo.get('contractInfo')
         self.contractStatus = contractInfo.get('contractStatus')
         self.status = contractInfo.get('status') or "FA"    #all should have this.  Not sure why I added or "FA"
         self.salary = contractInfo.get('salary')
         self.mfl_team = self.setMFLTeamFromMFLID(mfl_id)
+        print self.name, contractInfo.get('contractYear'), contractInfo.get('contractStatus')
 
     def updateOwner(self, new_owner_id):
         self.previous_owner_id = self.mfl_team
@@ -192,14 +197,20 @@ class Bid(db.Model):
 
     player = db.relationship(Player, backref='bids')
     owner_bidding = db.relationship(Owner, backref='bids')
+    draftPick = db.Column(db.Integer, default=None)
+    bounty = db.Column(db.Boolean, default=False) # use this to say whether bounty is money (True) or draftPick(False)
 
-    def __init__(self, player_id, owner_bidding_id, amount):
-        self.setBid(player_id, owner_bidding_id, amount)
+    def __init__(self, player_id, owner_bidding_id, amount, bounty):
+        self.setBid(player_id, owner_bidding_id, amount, bounty)
 
-    def setBid(self, player_id, owner_bidding_id, amount):
+    def setBid(self, player_id, owner_bidding_id, amount, bounty=None):
         self.player_id = player_id
         self.owner_bidding_id = owner_bidding_id
         self.amount = amount
+        if bounty == 'money':
+            self.bounty = True
+        elif bounty is not None:
+            self.draftPick = bounty
 
     def __repr__(self):
         playerName = Player.query.get(self.player_id).name

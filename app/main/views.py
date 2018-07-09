@@ -45,10 +45,12 @@ def index():
     roster = Owner.query.filter_by(mfl_team_id=session['mfl_id']).first().players
     teamname = session.get('owner').get('team_name')
     logo_url = image_host + session.get('owner').get('image_name')
+    availablePlayers = Player.query.filter(or_(Player.contractStatus == "T", Player.contractStatus == "F"))
     return render_template('index.html', 
                             roster=roster,
                             teamname=teamname,
-                            logo_url=logo_url)
+                            logo_url=logo_url,
+                            availablePlayers=availablePlayers)
 
 @main.route('/logout')
 def logout():
@@ -67,7 +69,7 @@ def contacts():
 @main.route('/keepers', methods=['GET', 'POST'])
 @login_required
 def keepers():
-    return redirect(url_for('main.tags'))
+    # return redirect(url_for('main.tags'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     error = False
 
@@ -87,6 +89,7 @@ def keepers():
             roster = Owner.query.filter_by(mfl_team_id=session.get('mfl_id')).first().players
             teamname = session.get('team_name')
             logo_url = image_host + session.get('owner').get('image_name')
+
             return render_template('keepers.html', 
                             roster=roster,
                             teamname=teamname,
@@ -204,33 +207,44 @@ def bidding():
             fBid = None
 
         if request.method == 'GET':
-
+            round1Picks = [pick.pickInRound for pick in current_owner.draftPicks.filter(DraftPick.draftRound == 1).all()]
+            round2Picks = [pick.pickInRound for pick in current_owner.draftPicks.filter(DraftPick.draftRound == 2).all()]
             return render_template('bidding.html', 
                     transPlayer=transPlayer,
                     franPlayer=franPlayer,
                     biddingOn=biddingOn,
                     tBid=tBid,
                     fBid=fBid,
-                    madeBid=current_owner.madeBid
+                    madeBid=current_owner.madeBid,
+                    round1Picks=round1Picks,
+                    round2Picks=round2Picks,
                     )
 
         if request.method == 'POST':
             # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that indicates the owner has made a bid on a player       
             franPlayerBid = int(request.form.get('franPlayerBid') or 0)
             transPlayerBid = int(request.form.get('transPlayerBid') or 0)
+            franBounty = request.form.get('franBounty') or None
+            transBounty = request.form.get('transBounty') or None
+
 
             if not franPlayerBid and not transPlayerBid:
                 flash("You didn't enter a bid for either player.")
                 return redirect(url_for('main.bidding'))
+
+            if transBounty != 'money' and transBounty is not None:
+                transBounty = int(transBounty)
+            if franBounty != 'money' and franBounty is not None:
+                franBounty = int(franBounty)
             
             invalidBid = False    
             # Check if owner has draft pick available
-            if not current_owner.hasPick(1) and franPlayerBid:
-                flash("You don't have a first round pick.  Cannot bid on a Franchise Player")
-                invalidBid = True
-            if not current_owner.hasPick(2) and transPlayerBid:
-                flash("You don't have a second round pick.  Cannot bid on a Transition Player")
-                invalidBid = True
+            # if not current_owner.hasPick(1) and franPlayerBid:
+            #     flash("You don't have a first round pick.  Cannot bid on a Franchise Player")
+            #     invalidBid = True
+            # if not current_owner.hasPick(2) and transPlayerBid:
+            #     flash("You don't have a second round pick.  Cannot bid on a Transition Player")
+            #     invalidBid = True
             if franPlayerBid > 0 and franPlayerBid < 30: 
                 flash("Minimum bid for a Franchise Player is $30")
                 invalidBid = True
@@ -245,8 +259,8 @@ def bidding():
             if invalidBid:
                 return redirect(url_for('main.bidding'))
             else:
-                tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid)
-                fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid)
+                tBid = Bid(player_id=transPlayer.id, owner_bidding_id=current_owner.id, amount=transPlayerBid, bounty=transBounty)
+                fBid = Bid(player_id=franPlayer.id, owner_bidding_id=current_owner.id, amount=franPlayerBid, bounty=franBounty)
                 db.session.add_all([tBid, fBid])
 
                 current_owner.madeBid = True
@@ -255,8 +269,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        # return "Bidding is off right now.  Just go back."
-        return redirect(url_for('main.match'))
+        return "Bidding is off right now.  Just go back."
+        # return redirect(url_for('main.match'))
 
 @main.route('/reset_bids', methods=['POST'])
 @login_required

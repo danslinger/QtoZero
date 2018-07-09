@@ -19,8 +19,7 @@
                         <th>Name</th>
                         <th>Highest Bidder</th>
                         <th>Winning Bid</th>
-                        {# <th>Winning Bid Adjusted</th> #}
-                        <th>Winning Team's Pick</th>
+                        <th>Winning Team's Collateral</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,8 +27,7 @@
                         <td>{{tBid.player.name}}</td>
                         <td>{{tBid.owner_bidding.team_name}}</td>
                         <td>${{tBid.amount}}</td>
-                        {# <td>${{tBid.winningAmount}}</td> #}
-                        <td>Round 2 Pick #{{highestTransPick.pickInRound}}</td>
+                        <td>{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick #{{tBid.draftPick}}{%endif%}</td>
                     </tr>
                 </tbody>
             </table>
@@ -37,7 +35,7 @@
                 {% if transPlayer.previous_owner_id == session.get('owner').get('id') %}
                     <p>You made your choice for this player already.</p>
                 {% else %}
-                    <p>The 2016 owner of this player has made their decision.</p>
+                    <p>The 2017 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif transPlayer.owner.id == session.get('owner').get('id') %}
                 <form method="POST" action="{{url_for('main.matchTrans') }}" role="form">
@@ -45,7 +43,7 @@
                     <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
                     <select id="transMatch" name="transMatch" class="form-control">
                         <option value="match">{{tBid.player.name}} at ${{tBid.amount}}</option>
-                        <option value="release">Round 2 Pick #{{highestTransPick.pickInRound}} and $10 FAAB</option>
+                        <option value="release">{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick #{{tBid.draftPick}}{%endif%} and $10 FAAB</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-lg">Submit Decision</button>
                     </div>
@@ -65,8 +63,7 @@
                         <th>Name</th>
                         <th>Highest Bidder</th>
                         <th>Winning Bid</th>
-                        {# <th>Winning Bid Adjusted</th> #}
-                        <th>Winning Team's Pick</th>
+                        <th>Winning Team's Collateral</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,8 +71,7 @@
                         <td>{{fBid.player.name}}</td>
                         <td>{{fBid.owner_bidding.team_name}}</td>
                         <td>${{fBid.amount}}</td>
-                        {# <td>${{fBid.winningAmount}}</td> #}
-                        <td>Round 1 Pick #{{highestFranPick.pickInRound}}</td>
+                        <td>{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick #{{fBid.draftPick}}{%endif%}</td>
                     </tr>
                 </tbody>
             </table>
@@ -83,7 +79,7 @@
                 {% if franPlayer.previous_owner_id == session.get('owner').get('id') %}
                 <p>You made your choice for this player already.</p>
                 {% else %}
-                <p>The 2016 owner of this player has made their decision.</p>
+                <p>The 2017 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
                 <form method="POST" action="{{url_for('main.matchFran') }}">
@@ -91,7 +87,7 @@
                     <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
                     <select id="franMatch" name="franMatch" class="form-control">
                         <option value="match">{{fBid.player.name}} at ${{fBid.amount}}</option>
-                        <option value="release">Round 1 Pick #{{highestFranPick.pickInRound}} and $5 CAB</option>
+                        <option value="release">{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick #{{fBid.draftPick}} {%endif%}and $5 CAB</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-lg">Submit Decision</button>
                     </div>

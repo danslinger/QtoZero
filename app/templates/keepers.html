@@ -2,13 +2,13 @@
 {% import "bootstrap/wtf.html" as wtf %}
 {% block title%}Calvinball Fantasy Football{% endblock %}
 {% block page_content %}
-
+<div class="col-md-1"></div>
 <div class="col-sm-9 col-xs-12">
 <img src="{{ logo_url }}" width="400">
 {% block messages %}{{super()}}{% endblock%}
 {% if not keeperSet %}   
 <div class="row">
-    <div class="col-sm-9 col-xs-12">
+    <div class="col-lg-9 col-xs-12">
         <h1>Select Keepers and Tag Players</h1>
         <form method="POST" action="{{url_for('main.keepers')}}" role="form" >
 
@@ -48,7 +48,7 @@
         </form>
     </div>
 
-    <div class="col-sm-3 hidden-xs">
+    <div class="col-sm-3 d-none d-md-block">
         <h4>Super Franchise Tag Contract Values</h4>
         <ul class="list-group">
             <li class="list-group-item">
@@ -56,19 +56,19 @@
                 Quarterback
             </li>
             <li class="list-group-item">
-                <span class="badge">$42</span>
+                <span class="badge">$48</span>
                 Running Back
             </li>
             <li class="list-group-item">
-                <span class="badge">$39</span>
+                <span class="badge">$52</span>
                 Wide Receiver
             </li>
             <li class="list-group-item">
-                <span class="badge">$25</span>
+                <span class="badge">$27</span>
                 Tight End
             </li>
             <li class="list-group-item">
-                <span class="badge">$8</span>
+                <span class="badge">$7</span>
                 Defense
             </li>
             <li class="list-group-item">
@@ -99,7 +99,7 @@
         <th>Name</th>
         <th>NFL Team</th>
         <th>Contract</th>
-        <th>Salary</th>
+        <th>Salary (2018)</th>
     </tr>
 </thead>
 <tbody>
@@ -112,7 +112,7 @@
         {% if player.contractStatus in ['TRANS', 'FRAN', 'SFRAN']%}
         TBD
         {% else %}
-        {{player.salary}}
+        {{player.salary +5}}
         {% endif %}
         </td>
     </tr>
