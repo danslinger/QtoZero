@@ -23,7 +23,7 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     app.extensions['bootstrap']['cdns']['jquery'] = WebCDN('//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/')
-    app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css')
+    # app.extensions['bootstrap']['cdns']['bootstrap'] = WebCDN('//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css')
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 

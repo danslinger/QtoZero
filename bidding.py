@@ -11,7 +11,7 @@ import datetime
 bot = SlackBot()
 ts = TaskScheduler()
 timeFormatString = '%A %B %d at %I:%M%p'
-letBotPost = False
+letBotPost = True
 
 def getRandomPlayer(playerType):
     # query for all players of tag==playerType whose finishedBidding is false
@@ -84,11 +84,11 @@ def startBid():
     db.session.commit()
     # Reset Cron job time
     
-    # stopTime = datetime.datetime.today() + datetime.timedelta(hours=48)
-    # stopJob = ts.getJob("STOPBID")
-    # ts.setJob(stopJob, stopTime)
-    # message += 'Bidding for these players ends '
-    # message += stopTime.strftime(timeFormatString)
+    stopTime = datetime.datetime.today() + datetime.timedelta(hours=48)
+    stopJob = ts.getJob("STOPBID")
+    ts.setJob(stopJob, stopTime)
+    message += 'Bidding for these players ends '
+    message += stopTime.strftime(timeFormatString)
 
     #Post Bot Message
     if letBotPost:
@@ -116,9 +116,9 @@ def stopBid():
     db.session.commit()
 
     # Set STARTBID to 24 hours later
-    # startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
-    # startJob = ts.getJob('STARTBID')
-    # ts.setJob(startJob, startTime)
+    startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
+    startJob = ts.getJob('STARTBID')
+    ts.setJob(startJob, startTime)
     message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(startTime.strftime(timeFormatString))
     message += "  If both are matched or released before then, new players will be available at that time"
     message += "  I'll send a message when new players are available."
