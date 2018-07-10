@@ -14,7 +14,7 @@
 
             <div class="form-group">
                 {% for player in roster|sort(reverse=True, attribute='salary') %}
-                {% if player.contractStatus != "R" %}
+                {% if player.status != "TAXI_SQUAD" %}
                 <div class="input-group">
                 {# <div class="row"> #}
                         <div class="input-group-addon playerName" >{{player.name}}</div>
