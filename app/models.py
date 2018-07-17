@@ -200,7 +200,7 @@ class Bid(db.Model):
     draftPick = db.Column(db.Integer, default=None)
     bounty = db.Column(db.Boolean, default=False) # use this to say whether bounty is money (True) or draftPick(False)
 
-    def __init__(self, player_id, owner_bidding_id, amount, bounty):
+    def __init__(self, player_id, owner_bidding_id, amount, bounty=None):
         self.setBid(player_id, owner_bidding_id, amount, bounty)
 
     def setBid(self, player_id, owner_bidding_id, amount, bounty=None):

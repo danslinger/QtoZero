@@ -23,7 +23,6 @@ def getRandomPlayer(playerType):
         return None
 
 def startBid():
-    #make sure all owners madeBid attribute is set to False
     # get the tPlayer and fPlayer.  None if first time - previous player bid if not
     tPlayer = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
     fPlayer = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
@@ -54,6 +53,7 @@ def startBid():
             highestFranPick.updatePick(current_owner.id)
         fPlayer.upForBid = False
 
+    #make sure all owners madeBid attribute is set to False
     owners = Owner.query.all()
     for o in owners:
         o.madeBid = False
@@ -105,8 +105,8 @@ def stopBid():
     tBids = getBids(tPlayer)
     fBids = getBids(fPlayer)
 
-    processBids(tPlayer, 'TRANS', tBids)
-    processBids(fPlayer, 'FRAN', fBids)
+    was_no_trans_bid = processBids(tPlayer, 'TRANS', tBids)
+    was__no_fran_bid = processBids(fPlayer, 'FRAN', fBids)
 
     #update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
@@ -115,17 +115,26 @@ def stopBid():
     fPlayer.finishedBidding = True
     db.session.commit()
 
-    # Set STARTBID to 24 hours later
-    startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
-    startJob = ts.getJob('STARTBID')
-    ts.setJob(startJob, startTime)
-    message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(startTime.strftime(timeFormatString))
-    message += "  If both are matched or released before then, new players will be available at that time"
-    message += "  I'll send a message when new players are available."
+    if was__no_fran_bid and was_no_trans_bid:
+        message = "There were no bids made this round on any player."
+        startTime = datetime.datetime.today() + datetime.timedelta(minutes=1)
+        startJob = ts.getJob('STARTBID')
+        ts.setJob(startJob, startTime)
+
+    else:
+        # Set STARTBID to 24 hours later
+        startTime = datetime.datetime.today() + datetime.timedelta(hours=24)
+        startJob = ts.getJob('STARTBID')
+        ts.setJob(startJob, startTime)
+        message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(startTime.strftime(timeFormatString))
+        message += "  If both are matched or released before then, new players will be available at that time"
+        message += "  I'll send a message when new players are available."
+    
     if letBotPost:
         bot.postMessage('general', message)
     else:
         print message
+
 
     
 ##### NEED TO FIGURE OUT OWNER in SESSION.  Force log out? ########
@@ -186,6 +195,7 @@ def processBids(player,tag, bids):
                                                                    winningBid.amount,
                                                                    bountyString
                                                                    )
+        was_no_bids = False
     else:
         if tag == 'TRANS':
             amount = 20
@@ -201,12 +211,14 @@ def processBids(player,tag, bids):
                          )
         winningBid.winningBid = True
         message = "No one bid on {0}. He is staying put.".format(player.name)
+        was_no_bids = True
         db.session.add(winningBid)
     db.session.commit()
     if letBotPost:
         bot.postMessage('general', message)
     else:
         print message
+    return was_no_bids
 
 
 if __name__ == '__main__':
