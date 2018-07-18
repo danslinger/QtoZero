@@ -269,8 +269,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else: #bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        return "Bidding is off right now.  Just go back."
-        # return redirect(url_for('main.match'))
+        # return "Bidding is off right now.  Just go back."
+        return redirect(url_for('main.match'))
 
 @main.route('/reset_bids', methods=['POST'])
 @login_required
