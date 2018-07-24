@@ -322,10 +322,9 @@ def match():
 def matchTrans():
     transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
     winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
-    winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-    highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
+    winningPick = winningFranBid.draftPick
     current_owner = Owner.query.get(transPlayer.owner.id)
-    bidding_owner = Owner.query.get(highestTransPick.owner_id)
+    bidding_owner = Owner.query.get(winningTransBid.owner_bidding_id)
 
     decision = request.form.get('transMatch')
     if decision == 'match': #keep player
@@ -337,7 +336,8 @@ def matchTrans():
                     )
     else: #release player
         transPlayer.updateOwner(bidding_owner.id)
-        highestTransPick.updatePick(current_owner.id)
+        if winningPick:
+            DraftPick.query.filter(and_(DraftPick.pickInRound == winningPick, DraftPick.draftRound ==2)).scalar().updatePick(current_owner.id)
         message = "{0} has decided to let {1} take his talents to {2}." \
                    .format(current_owner.team_name,
                            transPlayer.name,
@@ -367,10 +367,9 @@ def matchTrans():
 def matchFran():
     franPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
     winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
-    winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-    highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
+    winningPick = winningFranBid.draftPick
     current_owner = Owner.query.get(franPlayer.owner.id)
-    bidding_owner = Owner.query.get(highestFranPick.owner_id)
+    bidding_owner = Owner.query.get(winningFranBid.owner_bidding_id)
 
     decision = request.form.get('franMatch')
     if decision == 'match': #keep player
@@ -382,7 +381,8 @@ def matchFran():
                     )
     else: #release player
         franPlayer.updateOwner(bidding_owner.id)
-        highestFranPick.updatePick(current_owner.id)
+        if winningPick:
+            DraftPick.query.filter(and_(DraftPick.pickInRound == winningPick, DraftPick.draftRound ==1)).scalar().updatePick(current_owner.id)
         message = "{0} has decided to let {1} take his talents to {2}." \
                    .format(current_owner.team_name,
                            franPlayer.name,
