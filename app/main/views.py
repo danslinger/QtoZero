@@ -392,11 +392,14 @@ def matchFran():
     franchiseDecisionMade.bools = True
     db.session.commit()
     bothDecisions = getBothDecisions()
-    if bothDecisions == True:
+    try:
+        if bothDecisions == True:
         # get start bid job and redo it so it happens now
         startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
         startJob = ts.getJob('STARTBID')
         ts.setJob(startJob, startTime)
+    except Exception as e:
+        message += "\n\nDANNY!  You need to fix something dumb ass!"
     
     if letBotPost:
         bot.postMessage('general', message)
