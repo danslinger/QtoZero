@@ -308,37 +308,12 @@ def match():
         # bidding.py stopBid() should have run, so can get winning bid via queries
         winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
         winningFranBid = Bid.query.filter(Bid.player_id == franPlayer.id).filter(Bid.winningBid == True).scalar()
-        
-        if franchiseDecisionMade:
-            if franPlayer.previous_owner_id != franPlayer.owner.id:
-                winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-                # highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-                highestFranPick = None
-            else:
-                highestFranPick = None
-        else:
-            winningFranPicks = winningFranBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==1).all()
-            highestFranPick = min(winningFranPicks, key=attrgetter('pickInRound'))
-            # highestFranPick = None
-
-        if transitionDecisionMade:
-            if transPlayer.previous_owner_id != transPlayer.owner.id:
-                winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-                # highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-                highestTransPick = None
-            else:
-                highestTransPick = None
-        else:
-            winningTransPicks = winningTransBid.owner_bidding.draftPicks.filter(DraftPick.draftRound==2).all()
-            highestTransPick = min(winningTransPicks, key=attrgetter('pickInRound'))
-            # highestTransPick = None
+               
         return render_template('match.html',
                             transPlayer=transPlayer,
                             franPlayer=franPlayer,
                             tBid=winningTransBid,
                             fBid=winningFranBid,
-                            highestFranPick=highestFranPick,
-                            highestTransPick=highestTransPick,
                             franchiseDecisionMade=franchiseDecisionMade,
                             transitionDecisionMade=transitionDecisionMade,
                             )
