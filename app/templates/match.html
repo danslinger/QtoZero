@@ -6,8 +6,8 @@
 
 {% block messages %}{{super()}}{% endblock%}
 <div class="row">
-    <div class="col-sm-12 col-xs-12"></div>
     <h1>Current Round Winning Bids</h1>
+    <div class="col-sm-12 col-xs-12"></div>
     <div class="col-sm-6 col-xs-12">
         <h2>Transition Player</h2>
         {% if transPlayer.owner.id == tBid.owner_bidding.id and not transitionDecisionMade %}

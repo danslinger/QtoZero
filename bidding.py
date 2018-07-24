@@ -153,7 +153,7 @@ def highestBid(player, tagType, bids):
         winningBids = [b for b in bids if b.amount == highAmount]
         winningBid = getBidWithHighestPick(winningBids, tagType)  
         
-        db.session.commit()
+    db.session.commit()
     return winningBid
 
 def getBidWithHighestPick(winningBids, tagType):
