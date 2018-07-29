@@ -322,7 +322,7 @@ def match():
 def matchTrans():
     transPlayer = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
     winningTransBid = Bid.query.filter(Bid.player_id == transPlayer.id).filter(Bid.winningBid == True).scalar()
-    winningPick = winningFranBid.draftPick
+    winningPick = winningTransBid.draftPick
     current_owner = Owner.query.get(transPlayer.owner.id)
     bidding_owner = Owner.query.get(winningTransBid.owner_bidding_id)
 
