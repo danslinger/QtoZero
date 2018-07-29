@@ -8,4 +8,12 @@ calvinball.wsgi
 app/static
 draft_setup.py
 migrations-test
-
+.app_tokens
+.bash_history
+BotLog.txt
+access.log
+crontab
+data-dev2.sqlite.backupagain
+error.log
+qbTrackerTest.py
+tokens.py

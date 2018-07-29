@@ -20,36 +20,44 @@
 
 
 {% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <a class="navbar-brand" href="#">Calvinball Clubhouse</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
-  <div class="collapse navbar-collapse" id="navbarColor01">
-    <ul class="navbar-nav mr-auto" style="font-size: large;">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.keepers') }}">Keepers</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.bidding') }}">RFA Bidding</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.draft_order')}}">Draft Order</a></li>
-        <!-- <li><a href="#">Forum</a></li> -->
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.contacts') }}">GM Contacts</a></li>
-    </ul>
-    <ul class="nav navbar-nav navbar-right" style="font-size: large;">
-        {% if current_user.is_authenticated %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.logout') }}">Log Out</a></li>
-
-        {% endif %}
-    </ul>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <!-- <a class="navbar-brand" href="#">Calvinball</a> -->
+      <div class="nav navbar-nav navbar-left">
+      <a style="background-image: url('{{ url_for('static', filename='images/logo.png') }}')" class="navbar-brand myBrandImg" href="#"></a><span class="navbar-brand myBrand">The Clubhouse</span></div>
+    </div>
+    <div class="navbar-collapse collapse">
+      <ul style="padding-left:70px; font-size:1.2em;" class="nav navbar-nav">
+          <li><a href="{{ url_for('main.index') }}">Home</a></li>
+          <li><a href="{{ url_for('main.keepers') }}">Keepers</a></li>
+          <li><a href="{{ url_for('main.bidding') }}">RFA Bidding</a></li>
+          <li><a href="{{ url_for('main.draft_order')}}">Draft Order</a></li>
+          <!-- <li><a href="#">Forum</a></li> -->
+          <li><a href="{{ url_for('main.contacts') }}">GM Contacts</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+          {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('main.logout') }}">Log Out</a></li>
+          {# {% else %}
+          <li><a href="{{ url_for('main.login') }}">Log In</a></li> #}
+          {% endif %}
+      </ul>
+    </div>
   </div>
 </nav>
-
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
 	<div class="row" id='mainContent'>
-		<div class="col-md-2 d-none d-md-block bg-primary">
+		<div class="col-md-3 hidden-sm bg-primary">
 		    <!-- <img src="{{ url_for('static', filename='images/BANNER2016.png') }}"> -->
 			<img src="https://darkwater80.github.io/IMAGES/ICONS/2017/Past_Champs.png">
 		</div>
