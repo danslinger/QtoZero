@@ -1,6 +1,6 @@
 import requests, json
-import os
 import tokens
+
 
 class SlackBot(object):
     """docstring for SlackBot"""
@@ -9,15 +9,10 @@ class SlackBot(object):
         self.base_url = "http://slack.com/api/"
         self.username = 'Clubhouse'
         self.icon_url = 'http://www.qtozero.com/static/images/logo.png'
-        self.getSlackToken()
-
-    def getSlackToken(self):
-        # with open('.app_tokens') as f:
-        #     data = json.load(f)
         self.token = tokens.tokens['slack_token']
 
-    def postMessage(self,channel, message):
-        url = self.base_url + 'chat.postMessage'
+    def post_message(self, channel, message):
+        url = self.base_url + 'chat.post_message'
         payload = {'token': self.token,
                    'channel': channel,
                    'text': message,

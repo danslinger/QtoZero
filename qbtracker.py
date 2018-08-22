@@ -53,7 +53,7 @@ def reportToDateUsage(bot):
                    .format(team.team_name, team.two_qbs, "time" if team.two_qbs == 1 else "times")
         message += "{0} can use two QB's {1} more {2}.\n\n" \
                    .format(team.team_name, remaining, "time" if remaining == 1 else "times")
-    bot.postMessage(channel, message)
+    bot.post_message(channel, message)
 
 def getWeekNumber(today=None):
     '''
@@ -105,6 +105,6 @@ if __name__ == '__main__':
     db.session.commit()
 
     bot = SlackBot()
-    bot.postMessage(channel, message)
+    bot.post_message(channel, message)
 
     reportToDateUsage(bot)

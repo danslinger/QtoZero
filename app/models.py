@@ -1,13 +1,16 @@
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask.ext.login import UserMixin
-from sqlalchemy.sql.expression import or_,and_
-from . import db, login_manager
-import requests, json
+import json
+import requests
+from flask_login import UserMixin
+from sqlalchemy.sql.expression import and_
 from tokens import tokens
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from . import db, login_manager
 
 league_id = 31348
 url = 'http://www55.myfantasyleague.com/2018/export'
 api_token = tokens['mfl_token']
+
 
 class Owner(UserMixin, db.Model):
     __tablename__ = 'owners'
@@ -38,8 +41,9 @@ class Owner(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def keepers(self):
-        return self.players.filter(and_(Player.contractStatus=="K", Player.contractYear == "1")).count()
+        return self.players.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).count()
         # write a query to return the number of keepers on a roster
+
     def to_dict(self):
         d = {
             'id': self.id,
@@ -55,20 +59,22 @@ class Owner(UserMixin, db.Model):
             'image_name': self.image_name,
         }
         return d
-    def hasPick(self, rd):
+
+    def has_pick(self, rd):
         picks = self.draftPicks.filter(DraftPick.draftRound == rd).all()
         if picks:
             return True
         else:
             return False
 
-
     def __repr__(self):
         return '<Owner %r>' % self.team_name
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return Owner.query.get(int(user_id))
+
 
 class Player(db.Model):
     __tablename__ = 'players'
@@ -85,21 +91,21 @@ class Player(db.Model):
     sportsdata_id = db.Column(db.String(32))
     cbs_id = db.Column(db.String(32))
     twitter_username = db.column(db.String(32))
-    mfl_team = db.Column(db.Integer, db.ForeignKey('owners.id')) 
-    previous_owner_id = db.Column(db.Integer) 
+    mfl_team = db.Column(db.Integer, db.ForeignKey('owners.id'))
+    previous_owner_id = db.Column(db.Integer)
     salary = db.Column(db.Integer)
     contractStatus = db.Column(db.String(8))
-    status = db.Column(db.String(16)) # ROSTER, TAXI_SQUAD, INJURED_RESERVE 
+    status = db.Column(db.String(16))  # ROSTER, TAXI_SQUAD, INJURED_RESERVE
     contractYear = db.Column(db.String(16))
-    tag = db.Column(db.String(8)) # [TRANS, FRAN, SUPER_FRAN]
+    tag = db.Column(db.String(8))  # [TRANS, FRAN, SUPER_FRAN]
     upForBid = db.Column(db.Boolean, default=False)
     finishedBidding = db.Column(db.Boolean, default=False)
 
     def __init__(self, mfl_dict):
-        self.updatePlayer(mfl_dict)
+        self.update_player(mfl_dict)
 
-    def updatePlayer(self, mfl_dict):
-        self.name = self.name_swap(mfl_dict.get('name')) #Expects last,first
+    def update_player(self, mfl_dict):
+        self.name = self.name_swap(mfl_dict.get('name'))  # Expects last,first
         self.team = mfl_dict.get('team')
         self.mfl_id = mfl_dict.get('id')
         self.position = mfl_dict.get('position')
@@ -112,64 +118,67 @@ class Player(db.Model):
         self.cbs_id = mfl_dict.get('cbs_id')
         self.twitter_username = mfl_dict.get('twitter_username')
 
-    def updateContractInfo(self, contractInfo):
-        self.contractYear = contractInfo.get('contractYear')
-        self.contractStatus = contractInfo.get('contractStatus')
-        self.status = contractInfo.get('status') or "FA"
-        self.salary = contractInfo.get('salary') 
+    def update_contract_info(self, contract_info):
+        self.contractYear = contract_info.get('contractYear')
+        self.contractStatus = contract_info.get('contractStatus')
+        self.status = contract_info.get('status') or "FA"
+        self.salary = contract_info.get('salary')
 
-    def ResetContractInfo(self, currentOwnerID):
+    def reset_contract_info(self, current_owner_id):
         payload = {'TYPE': 'rosters',
-                    'JSON': 1,
-                    'L': league_id,
-                    'FRANCHISE': currentOwnerID,
-                    'APIKEY': api_token,
-                  }
+                   'JSON': 1,
+                   'L': league_id,
+                   'FRANCHISE': current_owner_id,
+                   'APIKEY': api_token,
+                   }
         r = requests.get(url, params=payload)
         roster = json.loads(r.content)
         for data in roster['rosters']['franchise']['player']:
             if data.get('id') == self.mfl_id:
-                self.updateContractInfo(data)
+                self.update_contract_info(data)
                 self.tag = None
                 break
 
-    def updateRosterInfo(self, contractInfo, mfl_id):
-        '''
-        contractInfo contains a dictionary in the form:
+    def update_roster_info(self, contract_info, mfl_id):
+        """
+        contract_info contains a dictionary in the form:
         {
-            "contractYear": "2" # Josh changed this to be the total years of the contract, which messed me up and is stupid
+            "contractYear": "2" #Josh changed this to the total years of the contract, which messed me up and is stupid
             "contractStatus": "K", # or T or F or S
             "status": "ROSTER",
             "id": "11175",
             "salary": "15"
-            "contractInfo": 1 # represents the years remaining on the contract
+            "contract_info": 1 # represents the years remaining on the contract
         }
         mfl_id is the mfl_id of the owner.  Need to take this value and find
         the owner.id and assign that to the Player.mfl_team (the foreign key is to owner.id)
 
         **maybe change mfl_team to owner NOPE, because of the backref owner**
-        '''
-        self.contractYear = contractInfo.get('contractInfo')
-        self.contractStatus = contractInfo.get('contractStatus')
-        self.status = contractInfo.get('status') or "FA"    #all should have this.  Not sure why I added or "FA"
-        self.salary = contractInfo.get('salary')
-        self.mfl_team = self.setMFLTeamFromMFLID(mfl_id)
-        print self.name, contractInfo.get('contractYear'), contractInfo.get('contractStatus')
+        """
+        self.contractYear = contract_info.get('contract_info')
+        self.contractStatus = contract_info.get('contractStatus')
+        self.status = contract_info.get('status') or "FA"  # all should have this.  Not sure why I added or "FA"
+        self.salary = contract_info.get('salary')
+        self.mfl_team = self.set_mfl_team_from_mfl_id(mfl_id)
+        print(self.name, contract_info.get('contractYear'), contract_info.get('contractStatus'))
 
-    def updateOwner(self, new_owner_id):
+    def update_owner(self, new_owner_id):
         self.previous_owner_id = self.mfl_team
         self.mfl_team = new_owner_id
 
-    def setMFLTeamFromMFLID(self, mfl_id):
+    @staticmethod
+    def set_mfl_team_from_mfl_id(mfl_id):
         return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
 
-    def name_swap(self, name_str):
+    @staticmethod
+    def name_swap(name_str):
         tmp = name_str.split(', ')
         tmp.reverse()
         return " ".join(tmp)
 
     def __repr__(self):
         return '<Player id:{0}; name:{1}; mfl_id:{2}>'.format(self.id, self.name, self.mfl_id)
+
 
 class DraftPick(db.Model):
     __tablename__ = "draftpicks"
@@ -178,12 +187,12 @@ class DraftPick(db.Model):
     pickInRound = db.Column(db.Integer)
     owner_id = db.Column(db.Integer, db.ForeignKey('owners.id'))
 
-    def updatePick(self, new_owner_id):
+    def update_pick(self, new_owner_id):
         self.owner_id = new_owner_id
 
     def __repr__(self):
-        ownerName = Owner.query.get(self.owner_id)
-        return '<Round:{0}; Pick:{1}; Owner:{2}>'.format(self.draftRound, self.pickInRound, ownerName)
+        owner_name = Owner.query.get(self.owner_id)
+        return '<Round:{0}; Pick:{1}; Owner:{2}>'.format(self.draftRound, self.pickInRound, owner_name)
 
 
 class Bid(db.Model):
@@ -198,12 +207,12 @@ class Bid(db.Model):
     player = db.relationship(Player, backref='bids')
     owner_bidding = db.relationship(Owner, backref='bids')
     draftPick = db.Column(db.Integer, default=None)
-    bounty = db.Column(db.Boolean, default=False) # use this to say whether bounty is money (True) or draftPick(False)
+    bounty = db.Column(db.Boolean, default=False)  # use this to say whether bounty is money (True) or draftPick(False)
 
     def __init__(self, player_id, owner_bidding_id, amount, bounty=None):
-        self.setBid(player_id, owner_bidding_id, amount, bounty)
+        self.set_bid(player_id, owner_bidding_id, amount, bounty)
 
-    def setBid(self, player_id, owner_bidding_id, amount, bounty=None):
+    def set_bid(self, player_id, owner_bidding_id, amount, bounty=None):
         self.player_id = player_id
         self.owner_bidding_id = owner_bidding_id
         self.amount = amount
@@ -213,9 +222,10 @@ class Bid(db.Model):
             self.draftPick = bounty
 
     def __repr__(self):
-        playerName = Player.query.get(self.player_id).name
-        ownerName = Owner.query.get(self.owner_bidding_id).team_name
-        return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(playerName, ownerName, self.amount)
+        player_name = Player.query.get(self.player_id).name
+        owner_name = Owner.query.get(self.owner_bidding_id).team_name
+        return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(player_name, owner_name, self.amount)
+
 
 class States(db.Model):
     __tablename__ = 'states'
