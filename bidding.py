@@ -8,11 +8,12 @@ from SlackBot import SlackBot
 from TaskScheduler import TaskScheduler
 from app import db, create_app
 from app.models import States, Player, Owner, Bid, DraftPick
+from local_settings import let_bot_post
 
 bot = SlackBot()
 ts = TaskScheduler()
 timeFormatString = '%A %B %d at %I:%M%p'
-letBotPost = True
+letBotPost = let_bot_post
 
 
 def get_random_player(player_type):
@@ -25,6 +26,7 @@ def get_random_player(player_type):
         return None
 
 
+# noinspection SpellCheckingInspection
 def start_bid():
     # get the t_player and f_player.  None if first time - previous player bid if not
     t_player = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid is True).scalar()
@@ -165,6 +167,7 @@ def get_bid_with_highest_pick(winning_bids):
         return winning_bids[winning_bids.index(highest_draft_pick)]
 
 
+# noinspection PyUnboundLocalVariable
 def process_bids(player, tag, bids):
     message = ''
     if bids:

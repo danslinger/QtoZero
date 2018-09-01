@@ -11,10 +11,11 @@ from . import main
 from .forms import LoginForm
 from .. import db
 from ..models import Owner, Player, Bid, DraftPick, States
+from ...local_settings import let_bot_post
 
 bot = SlackBot()
 # ts = TaskScheduler()
-letBotPost = True
+letBotPost = let_bot_post
 
 image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
 _TAGS = ['FRAN', 'SFRAN', 'TRANS']
