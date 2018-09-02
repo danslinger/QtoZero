@@ -17,3 +17,4 @@ data-dev2.sqlite.backupagain
 error.log
 qbTrackerTest.py
 tokens.py
+local_settings.py
