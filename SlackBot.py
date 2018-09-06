@@ -6,13 +6,13 @@ class SlackBot(object):
     """docstring for SlackBot"""
     def __init__(self):
         super(SlackBot, self).__init__()
-        self.base_url = "http://slack.com/api/"
+        self.base_url = "https://slack.com/api/"
         self.username = 'Clubhouse'
-        self.icon_url = 'http://www.qtozero.com/static/images/logo.png'
+        self.icon_url = 'https://www.qtozero.com/static/images/logo.png'
         self.token = tokens.tokens['slack_token']
 
     def post_message(self, channel, message):
-        url = self.base_url + 'chat.post_message'
+        url = self.base_url + 'chat.postMessage'
         payload = {'token': self.token,
                    'channel': channel,
                    'text': message,
