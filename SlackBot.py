@@ -8,7 +8,7 @@ class SlackBot(object):
         super(SlackBot, self).__init__()
         self.base_url = "https://slack.com/api/"
         self.username = 'Clubhouse'
-        self.icon_url = 'https://www.qtozero.com/static/images/logo.png'
+        self.icon_url = 'https://www.qtozero.com/static/images/bot.png'
         self.token = tokens.tokens['slack_token']
 
     def post_message(self, channel, message):
