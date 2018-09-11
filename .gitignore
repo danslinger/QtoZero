@@ -5,7 +5,6 @@ venv
 owner_setup.py
 player_setup.py
 calvinball.wsgi
-app/static
 draft_setup.py
 migrations-test
 .app_tokens
@@ -18,3 +17,4 @@ error.log
 qbTrackerTest.py
 tokens.py
 local_settings.py
+.idea
