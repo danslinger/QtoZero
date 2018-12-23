@@ -1,4 +1,3 @@
-import datetime
 import itertools
 import subprocess
 
@@ -6,11 +5,12 @@ from flask import render_template, redirect, request, url_for, flash, session
 from flask_login import login_required, login_user, logout_user
 from sqlalchemy.sql.expression import or_, and_
 
+# from ..bidding import highest_bid
 from SlackBot import SlackBot
 from . import main
 from .forms import LoginForm
 from .. import db
-from ..models import Owner, Player, Bid, DraftPick, States, Division, ProbowlRoster
+from ..models import Owner, Player, Bid, DraftPick, States
 # from ...local_settings import let_bot_post
 
 bot = SlackBot()
@@ -35,7 +35,7 @@ def login():
             # session['owner_object'] = owner #stop doing this!! You can't serialize the owner object
             # (well, maybe.  You can look into that) BUT STOP TRYING THIS
             # flash('You were successfully logged in')
-            return redirect(request.args.get('next') or url_for('main.probowl'))
+            return redirect(request.args.get('next') or url_for('main.index'))
         else:
             flash('Incorrect Email or Password')
     return render_template('login.html', form=form)
@@ -410,39 +410,3 @@ def get_both_decisions():
     franchise_decision_made = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
     transition_decision_made = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
     return franchise_decision_made and transition_decision_made
-
-
-@main.route('/probowl', methods=['GET'])
-@login_required
-def probowl():
-    division = Division.query.get(session.get('owner').get('division_id'))
-    positions = ['QB', 'RB', 'WR', 'TE', 'PK', 'Def']
-    results = dict()
-
-    for position in positions:
-        results[position] = Player.query.join(Owner).join(Division).filter(Division.name == division.name) \
-                      .filter(Player.position == position).all()
-
-    results['FLEX'] = results['RB'] + results['WR'] + results['TE']
-    current_owner_id = session.get('owner').get('id')
-    pb_roster = ProbowlRoster.query.filter(ProbowlRoster.owner_id == current_owner_id).first()
-
-    return render_template('probowl.html', players=results, pb_roster=pb_roster)
-
-@main.route('/probowl/setLineup', methods=['POST'])
-def set_probowl_lineup():
-    cutoff_time = datetime.datetime(2018,12,30,10)
-    if datetime.datetime.now() > cutoff_time:
-        flash("Games started.  Can't submit roster changes")
-    else:
-        players = {k: v for k, v in request.form.items() if v}
-        print(players)
-        current_owner_id = session.get('owner').get('id')
-        pb_roster = ProbowlRoster.query.filter(ProbowlRoster.owner_id == current_owner_id).first()
-        if not pb_roster:
-            pb_roster = ProbowlRoster(current_owner_id)
-        pb_roster.update(players)
-        db.session.add(pb_roster)
-        db.session.commit()
-        flash("Pro Bowl Roster Submitted Successfully")
-    return redirect(url_for('main.probowl'))
