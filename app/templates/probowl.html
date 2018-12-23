@@ -58,7 +58,7 @@
           <select id="WR3" name="WR3" class="form-control">
             {% if not pb_roster %}<option selected></option>{% endif %}
             {% for player in players['WR'] %}
-              <option {% if pb_roster and pb_roster.rb3 == player.id %} selected {% endif %} value="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
+              <option {% if pb_roster and pb_roster.wr3 == player.id %} selected {% endif %} value="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -76,7 +76,7 @@
           <select id="FLEX" name="FLEX" class="form-control">
             {% if not pb_roster %}<option selected></option>{% endif %}
             {% for player in players['FLEX'] %}
-              <option {% if pb_roster and pb_roster.flex == player.id %} selected {% endif %} ="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
+              <option {% if pb_roster and pb_roster.flex == player.id %} selected {% endif %} value="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
             {% endfor %}
           </select>
         </div>

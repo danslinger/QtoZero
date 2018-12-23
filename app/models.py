@@ -313,5 +313,6 @@ class ProbowlRoster(db.Model):
         self.wr3 = int(players.get('WR3')) if players.get('WR3') else None
         self.te = int(players.get('TE')) if players.get('TE') else None
         self.pk = int(players.get('PK')) if players.get('PK') else None
-        self.dst = int(players.get('DST')) if players.get('DST') else None
+        self.dst = int(players.get('DEF')) if players.get('DEF') else None
+        self.flex = int(players.get('FLEX')) if players.get('FLEX') else None
 
