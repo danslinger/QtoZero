@@ -415,7 +415,8 @@ def get_both_decisions():
 @main.route('/probowl', methods=['GET'])
 @login_required
 def probowl():
-    division = Division.query.get(session.get('owner').get('division_id'))
+    current_owner = Owner.query.get(session.get('owner').get('id'))
+    division = Division.query.get(current_owner.division_id)
     positions = ['QB', 'RB', 'WR', 'TE', 'PK', 'Def']
     results = dict()
 
