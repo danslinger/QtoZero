@@ -58,7 +58,7 @@ def report_to_date_usage(bot):
         remaining = 6 - t.two_qbs
         msg += f'{t.team_name}: {remaining}/6 remaining\n\n'
 
-    bot.post_message(channel, msg)
+    bot.post_message(channel, message)
 
 
 def get_week_number(today=None):
@@ -111,6 +111,6 @@ if __name__ == '__main__':
     db.session.commit()
 
     bot = SlackBot()
-    bot.post_message(channel, message)
+    # bot.post_message(channel, message)
 
     report_to_date_usage(bot)
