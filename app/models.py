@@ -8,7 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, login_manager
 
 league_id = 31348
-url = 'http://www55.myfantasyleague.com/2018/export'
+year = 2019
+url = f'http://www55.myfantasyleague.com/{year}/export'
 api_token = tokens['mfl_token']
 
 
@@ -165,12 +166,13 @@ class Player(db.Model):
 
         **maybe change mfl_team to owner NOPE, because of the backref owner**
         """
-        self.contractYear = contract_info.get('contract_info')
+        self.contractYear = contract_info.get('contractInfo')
         self.contractStatus = contract_info.get('contractStatus')
         self.status = contract_info.get('status') or "FA"  # all should have this.  Not sure why I added or "FA"
         self.salary = contract_info.get('salary')
         self.mfl_team = self.set_mfl_team_from_mfl_id(mfl_id)
-        print(self.name, contract_info.get('contractYear'), contract_info.get('contractStatus'))
+        if (self.contractStatus == "K"):
+            print(self.name, contract_info.get('contractInfo'), contract_info.get('contractStatus'))
 
     def update_owner(self, new_owner_id):
         self.previous_owner_id = self.mfl_team

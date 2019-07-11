@@ -78,7 +78,7 @@ def keepers():
     if request.method == 'GET':
         if current_owner.keeperSet:
             roster = Player.query.filter_by(owner=current_owner).filter(
-                or_(and_(Player.contractStatus == "K", Player.contractYear == "2"),
+                or_(and_(Player.contractStatus == "K", Player.contractYear != "0"),
                     Player.tag.in_(_TAGS))).all()
             team_name = session.get('team_name')
             logo_url = image_host + session.get('owner').get('image_name')

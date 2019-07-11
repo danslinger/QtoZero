@@ -22,7 +22,7 @@
                         <div class="input-group-addon playerItem" >${{player.salary}}</div>
                         <div class="input-group-addon playerStatus" >{% if player.contractStatus == "K" and player.contractYear == "0" %}{{player.contractStatus}}(0){% else %}{{ player.contractStatus }}{% endif %}</div>
 
-                        <select id="{{player.id}}" name="{{player.id}}"class="form-control">
+                        <select id="{{player.id}}" name="{{player.id}}" class="form-control">
                             <option selected=""></option>
                             {% if player.contractStatus == "S" or (player.contractStatus == "K" and player.contractYear == "0") %}
                             {% if not (player.contractStatus == "K" and player.contractYear == "0") %}
@@ -52,23 +52,23 @@
         <h4>Super Franchise Tag Contract Values</h4>
         <ul class="list-group">
             <li class="list-group-item">
-                <span class="badge">$45</span>
+                <span class="badge">$38</span>
                 Quarterback
             </li>
             <li class="list-group-item">
-                <span class="badge">$48</span>
+                <span class="badge">$43</span>
                 Running Back
             </li>
             <li class="list-group-item">
-                <span class="badge">$52</span>
+                <span class="badge">$49</span>
                 Wide Receiver
             </li>
             <li class="list-group-item">
-                <span class="badge">$27</span>
+                <span class="badge">$23</span>
                 Tight End
             </li>
             <li class="list-group-item">
-                <span class="badge">$7</span>
+                <span class="badge">$8</span>
                 Defense
             </li>
             <li class="list-group-item">
@@ -99,7 +99,7 @@
         <th>Name</th>
         <th>NFL Team</th>
         <th>Contract</th>
-        <th>Salary (2018)</th>
+        <th>Salary (2019)</th>
     </tr>
 </thead>
 <tbody>
