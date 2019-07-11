@@ -16,7 +16,7 @@
 <div class="col-sm-8">
 <img src="{{ logo_url }}" width="400">
 {% block messages %}{{super()}}{% endblock%}
-<h1>And we're BAAAAAAAAAAAACK.. Calvinball 2018</h1>
+<h1>And we're BAAAAAAAAAAAACK.. Calvinball <strike>2018</strike>2019</h1>
 <!-- <div id="calendar"></div> -->
 <p>
   Welcome.  This site is almost identical to last year.  Here are a few reminders:
@@ -27,32 +27,27 @@
     <li>Players whose keeper contracts have expired are labeld K(0).  You may tag these players if you wish</li>
     <li>Players who are entering the second year of their keeper contract are labeled as K</li>
     <li>Players on your rookie squad aren't listed here</li>
-    <li>Players that were tagged last year cannot be kept or tagged.  They are listed below for all teams.</li>
+    <li>Players that were tagged last year cannot be kept or tagged.  They have been removed from your roster.</li>
     <li>Cutoff date for selecting keepers and tags is July 15.  Bidding for Franchise and Transition players will begin shortly after that.</li>
     <li>Slack will be the place for getting updates about the status of the bidding (who's up for bid, who's been matched/let go, etc...)</li>
-    <li>NEW THIS YEAR: If you have multiple picks in a round, you can select which one you want to offer up as collateral when you are making your Franchise or Transition bids.</li>
-    <li>NEW THIS YEAR: If you don't have a draft pick to offer up in collateral for a Franchise or Transition bid, you can now offer up $10 CAB or $20 FAAB for Franchise or Transition tags, respectively.  </li>
+    <li>NEW <strike>THIS</strike> LAST YEAR: If you have multiple picks in a round, you can select which one you want to offer up as collateral when you are making your Franchise or Transition bids.</li>
+    <li>NEW <strike>THIS</strike> LAST YEAR: If you don't have a draft pick to offer up in collateral for a Franchise or Transition bid, you can now offer up $10 CAB or $20 FAAB for Franchise or Transition tags, respectively.  </li>
     <li>If you have questions about this, talk to Danny.</li>
   </ul>
 </p>
 
 <h2>What do I do here?</h2>
 <p>
-    So, its pretty self explanitory.  Go to the keepers tab and select your keepers and tag your players.  If you screw up or want to reconsider, you will be able to do that up until the cutoff date for selecting keepers.   
+    So, its pretty self explanatory.  Go to the keepers tab and select your keepers and tag your players.  If you screw up or want to reconsider, you will be able to do that up until the cutoff date for selecting keepers.
 </p>
 
 <p>
-    Again, I (Danny) maintain this website so if its messed up you can harass me.  If you have any issues, let me know right away - I have my Slack notifications turned on.  Don't tell Josh and expect him to be the messenger - tell me.  Again, like last year (and the year before), I expect mistakes but hopefully less so.  
+    Again, I (Danny) maintain this website so if its messed up you can harass me.  If you have any issues, let me know right away - I have my Slack notifications turned on.  Don't tell Josh and expect him to be the messenger - tell me.  Again, like last year (and the year before) ... (and the year before that...), I expect mistakes but hopefully less so.
 </p>
 <p>
     You have until July 15 to select your keepers and place your tags.  Yeah, that's not too far away.  Deal.  And choose wisely.  If you don't think you can make that date for some reason, please let me know right away.
 </p>
-<h2>Players guaranteed to be available in the auction</h2>
-<ul>
-{% for player in availablePlayers%}
-<li>{{player.name}}</li>
-{% endfor %}
-</ul>
+
 </div>  
 
 {% endblock %}}
