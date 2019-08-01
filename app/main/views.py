@@ -1,5 +1,6 @@
 import datetime
 import itertools
+import os
 import subprocess
 
 from flask import render_template, redirect, request, url_for, flash, session
@@ -192,8 +193,8 @@ def reset_keepers():
 def bidding():
     bidding_on = States.query.filter(States.name == 'biddingOn').scalar().bools
     if bidding_on:
-        trans_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "TRANS").scalar()
-        fran_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "FRAN").scalar()
+        trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+        fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
         current_owner = Owner.query.get(session.get('owner').get('id'))
         if current_owner.madeBid:
             t_bid = Bid.query.filter(Bid.player_id == trans_player.id) \
@@ -274,8 +275,8 @@ def bidding():
 @main.route('/reset_bids', methods=['POST'])
 @login_required
 def reset_bids():
-    trans_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "TRANS").scalar()
-    fran_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "FRAN").scalar()
+    trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+    fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
     current_owner = Owner.query.get(session.get('owner').get('id'))
 
     # find bid for transPlayer with current_owner, delete it
@@ -303,13 +304,13 @@ def match():
         return redirect(url_for('main.bidding'))
     else:
         # get the current players up for bid
-        trans_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "TRANS").scalar()
-        fran_player = Player.query.filter(Player.upForBid is True).filter(Player.tag == "FRAN").scalar()
+        trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+        fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
 
         # get the winning transition and franchise bids
         # bidding.py stop_bid() should have run, so can get winning bid via queries
-        winning_trans_bid = Bid.query.filter(Bid.player_id == trans_player.id).filter(Bid.winningBid is True).scalar()
-        winning_fran_bid = Bid.query.filter(Bid.player_id == fran_player.id).filter(Bid.winningBid is True).scalar()
+        winning_trans_bid = Bid.query.filter(Bid.player_id == trans_player.id).filter(Bid.winningBid == True).scalar()
+        winning_fran_bid = Bid.query.filter(Bid.player_id == fran_player.id).filter(Bid.winningBid == True).scalar()
 
         return render_template('match.html',
                                transPlayer=trans_player,
@@ -321,7 +322,7 @@ def match():
                                )
 
 
-@main.route('/matchTrans', methods=['POST'])
+@main.route('/match_trans', methods=['POST'])
 @login_required
 def match_trans():
     message = process_match_release_player("TRANS", request.form.get('transMatch'), 2)
@@ -330,13 +331,13 @@ def match_trans():
     db.session.commit()
 
     both_decisions = get_both_decisions()
-    if both_decisions is True:
+    if both_decisions == True:
         # get start bid job and redo it so it happens now
         # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
         # startJob = ts.get_job('STARTBID')
         # ts.set_job(startJob, startTime)
-
-        subprocess.call(['/var/www/Calvinball/Calvinball/venv/bin/python2', '/var/www/Calvinball/Calvinball/bidding.py',
+        pwd = os.getcwd()
+        subprocess.call([os.path.join(pwd,'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
                          'start_bid'])
 
     if letBotPost:
@@ -346,7 +347,7 @@ def match_trans():
     return redirect(url_for('main.match'))
 
 
-@main.route('/matchFran', methods=['POST'])
+@main.route('/match_fran', methods=['POST'])
 @login_required
 def match_fran():
     message = process_match_release_player("FRAN", request.form.get('franMatch'), 1)
@@ -355,13 +356,13 @@ def match_fran():
     db.session.commit()
 
     both_decisions = get_both_decisions()
-    if both_decisions is True:
+    if both_decisions == True:
         # get start bid job and redo it so it happens now
         # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
         # startJob = ts.get_job('STARTBID')
         # ts.set_job(startJob, startTime)
-
-        subprocess.call(['/var/www/Calvinball/Calvinball/venv/bin/python2', '/var/www/Calvinball/Calvinball/bidding.py',
+        pwd = os.getcwd()
+        subprocess.call([os.path.join(pwd, 'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
                          'start_bid'])
     if letBotPost:
         bot.post_message('general', message)
@@ -372,8 +373,8 @@ def match_fran():
 
 # should probably move this to bidding.py and then import it from there
 def process_match_release_player(tag_type, decision, draft_round):
-    player_up_for_bid = Player.query.filter(Player.upForBid is True).filter(Player.tag == tag_type).scalar()
-    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(Bid.winningBid is True).scalar()
+    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(Player.tag == tag_type).scalar()
+    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(Bid.winningBid== True).scalar()
     winning_pick = winning_bid.draftPick
     current_owner = Owner.query.get(player_up_for_bid.owner.id)
     bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)
@@ -415,6 +416,7 @@ def get_both_decisions():
 @main.route('/probowl', methods=['GET'])
 @login_required
 def probowl():
+    return redirect(url_for('main.index'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     division = Division.query.get(current_owner.division_id)
     positions = ['QB', 'RB', 'WR', 'TE', 'PK', 'Def']
@@ -429,6 +431,7 @@ def probowl():
     pb_roster = ProbowlRoster.query.filter(ProbowlRoster.owner_id == current_owner_id).first()
 
     return render_template('probowl.html', players=results, pb_roster=pb_roster)
+
 
 @main.route('/probowl/setLineup', methods=['POST'])
 def set_probowl_lineup():

@@ -38,9 +38,9 @@
                     <p>The 2017 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif transPlayer.owner.id == session.get('owner').get('id') %}
-                <form method="POST" action="{{url_for('main.matchTrans') }}" role="form">
+                <form method="POST" action="{{url_for('main.match_trans') }}" role="form">
                     <div class="form-group">
-                    <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
+                    <label for="franMatch">Select to keep the player at the given value or release him and receive the stated compensation</label>
                     <select id="transMatch" name="transMatch" class="form-control">
                         <option value="match">{{tBid.player.name}} at ${{tBid.amount}}</option>
                         <option value="release">{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick #{{tBid.draftPick}}{%endif%} and $10 FAAB</option>
@@ -82,9 +82,9 @@
                 <p>The 2017 owner of this player has made their decision.</p>
                 {% endif %}
             {% elif franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
-                <form method="POST" action="{{url_for('main.matchFran') }}">
+                <form method="POST" action="{{url_for('main.match_fran') }}">
                     <div class="form-group">
-                    <label for="franMatch">Select to keep the player at the given value or release him and recieve the stated compensation</label>
+                    <label for="franMatch">Select to keep the player at the given value or release him and receive the stated compensation</label>
                     <select id="franMatch" name="franMatch" class="form-control">
                         <option value="match">{{fBid.player.name}} at ${{fBid.amount}}</option>
                         <option value="release">{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick #{{fBid.draftPick}} {%endif%}and $5 CAB</option>
@@ -97,8 +97,6 @@
         {% endif %}
     </div>
     </div>
-</div>
-
 </div>
 
 {% endblock %}}

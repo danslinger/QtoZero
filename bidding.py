@@ -25,19 +25,47 @@ def get_random_player(player_type):
     else:
         return None
 
+def get_next_player(player_type, playerIndex):
+    if player_type == "FRAN":
+        return get_next_fran(playerIndex)
+    else:
+        return get_next_tran(playerIndex)
+
+def get_next_fran(playerIndex):
+    fps = [Player.query.get(280), Player.query.get(322), Player.query.get(461)]
+
+    if playerIndex < len(fps):
+        return fps[playerIndex]
+    else:
+        return None
+
+
+def get_next_tran(playerIndex):
+    tps = [Player.query.get(124), Player.query.get(615), Player.query.get(80), Player.query.get(283)]
+    if playerIndex < len(tps):
+        return tps[playerIndex]
+    else:
+        return None
+
 
 # noinspection SpellCheckingInspection
 def start_bid():
+    biddingState = States.query.filter_by(name="biddingOn").first()
+    if Player.query.filter(Player.upForBid == True).count() == 0 and biddingState.bools == False:
+        biddingState.number = 0
+    else:
+        biddingState.number = biddingState.number + 1
+
     # get the t_player and f_player.  None if first time - previous player bid if not
-    t_player = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid is True).scalar()
-    f_player = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid is True).scalar()
+    t_player = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
+    f_player = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
     franchise_decision_made = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
     transition_decision_made = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
 
     if t_player:  # not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
         if not transition_decision_made:
-            winning_trans_bid = Bid.query.filter(Bid.player_id == t_player.id).filter(Bid.winningBid is True).scalar()
+            winning_trans_bid = Bid.query.filter(Bid.player_id == t_player.id).filter(Bid.winningBid == True).scalar()
             winning_trans_picks = winning_trans_bid.owner_bidding.draftPicks.filter(DraftPick.draftRound == 2).all()
             highest_trans_pick = min(winning_trans_picks, key=attrgetter('pickInRound'))
             current_owner = Owner.query.get(t_player.owner.id)
@@ -48,7 +76,7 @@ def start_bid():
     if f_player:  # not the first time
         # if owner of franchise pick didn't make a decision, the player changes hands
         if not franchise_decision_made:
-            winning_fran_bid = Bid.query.filter(Bid.player_id == f_player.id).filter(Bid.winningBid is True).scalar()
+            winning_fran_bid = Bid.query.filter(Bid.player_id == f_player.id).filter(Bid.winningBid == True).scalar()
             winning_fran_picks = winning_fran_bid.owner_bidding.draftPicks.filter(DraftPick.draftRound == 1).all()
             highest_fran_pick = min(winning_fran_picks, key=attrgetter('pickInRound'))
             current_owner = Owner.query.get(f_player.owner.id)
@@ -63,7 +91,7 @@ def start_bid():
         o.madeBid = False
     message = ''
 
-    t_player = get_random_player("TRANS")
+    t_player = get_next_player("TRANS", biddingState.number)
     if t_player:
         t_player.upForBid = True
         States.query.filter(States.name == 'transitionDecisionMade').scalar().bools = False
@@ -71,7 +99,7 @@ def start_bid():
     else:
         message += 'There are no transition players up for bid.\n'
 
-    f_player = get_random_player("FRAN")
+    f_player = get_next_player("FRAN", biddingState.number)
     if f_player:
         f_player.upForBid = True
         States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools = False
@@ -86,7 +114,8 @@ def start_bid():
     # Reset Cron job time
 
     stop_time = datetime.datetime.today() + datetime.timedelta(hours=48)
-    stop_job = ts.get_job("STOPBID")
+    command = get_bidding_command("stop_bid")
+    stop_job = ts.get_job("STOPBID", command)
     ts.set_job(stop_job, stop_time)
     message += 'Bidding for these players ends '
     message += stop_time.strftime(timeFormatString)
@@ -98,10 +127,18 @@ def start_bid():
         print(message)
 
 
+def get_bidding_command(arg):
+    pwd = os.getcwd()
+    program = os.path.join(pwd, "venv/bin/python")
+    script_to_run = os.path.join(pwd, "bidding.py")
+    command = f"{program} {script_to_run} {arg} "
+    return command
+
+
 def stop_bid():
     # get the t_player and f_player
-    t_player = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid is True).scalar()
-    f_player = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid is True).scalar()
+    t_player = Player.query.filter(Player.tag == 'TRANS').filter(Player.upForBid == True).scalar()
+    f_player = Player.query.filter(Player.tag == 'FRAN').filter(Player.upForBid == True).scalar()
 
     t_bids = get_bids(t_player)
     f_bids = get_bids(f_player)
@@ -119,13 +156,15 @@ def stop_bid():
     if was__no_fran_bid and was_no_trans_bid:
         message = "There were no bids made this round on any player."
         start_time = datetime.datetime.today() + datetime.timedelta(minutes=1)
-        start_job = ts.get_job('STARTBID')
+        command = get_bidding_command("start_bid")
+        start_job = ts.get_job('STARTBID', command)
         ts.set_job(start_job, start_time)
 
     else:
         # Set STARTBID to 24 hours later
         start_time = datetime.datetime.today() + datetime.timedelta(hours=24)
-        start_job = ts.get_job('STARTBID')
+        command = get_bidding_command("start_bid")
+        start_job = ts.get_job('STARTBID', command)
         ts.set_job(start_job, start_time)
         message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(
             start_time.strftime(timeFormatString))
@@ -173,7 +212,7 @@ def process_bids(player, tag, bids):
     if bids:
         winning_bid = highest_bid(bids)
         winning_bid.winningBid = True
-        if winning_bid.bounty is True:
+        if winning_bid.bounty == True:
             if tag == 'TRANS':
                 bounty_string = "$15 FAAB"
             else:
