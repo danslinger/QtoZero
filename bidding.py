@@ -4,6 +4,8 @@ import random
 import sys
 from operator import attrgetter
 
+from sqlalchemy import and_
+
 from SlackBot import SlackBot
 from TaskScheduler import TaskScheduler
 from app import db, create_app
@@ -50,6 +52,7 @@ def get_next_tran(playerIndex):
 
 # noinspection SpellCheckingInspection
 def start_bid():
+    message = ''
     biddingState = States.query.filter_by(name="biddingOn").first()
     if Player.query.filter(Player.upForBid == True).count() == 0 and biddingState.bools == False:
         biddingState.number = 0
@@ -65,31 +68,17 @@ def start_bid():
     if t_player:  # not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
         if not transition_decision_made:
-            winning_trans_bid = Bid.query.filter(Bid.player_id == t_player.id).filter(Bid.winningBid == True).scalar()
-            winning_trans_picks = winning_trans_bid.owner_bidding.draftPicks.filter(DraftPick.draftRound == 2).all()
-            highest_trans_pick = min(winning_trans_picks, key=attrgetter('pickInRound'))
-            current_owner = Owner.query.get(t_player.owner.id)
-            bidding_owner = Owner.query.get(highest_trans_pick.owner_id)
-            t_player.update_owner(bidding_owner.id)
-            highest_trans_pick.updatePick(current_owner.id)
+            message += process_match_release_player("TRANS", "release", 2)
         t_player.upForBid = False
     if f_player:  # not the first time
         # if owner of franchise pick didn't make a decision, the player changes hands
-        if not franchise_decision_made:
-            winning_fran_bid = Bid.query.filter(Bid.player_id == f_player.id).filter(Bid.winningBid == True).scalar()
-            winning_fran_picks = winning_fran_bid.owner_bidding.draftPicks.filter(DraftPick.draftRound == 1).all()
-            highest_fran_pick = min(winning_fran_picks, key=attrgetter('pickInRound'))
-            current_owner = Owner.query.get(f_player.owner.id)
-            bidding_owner = Owner.query.get(highest_fran_pick.owner_id)
-            f_player.update_owner(bidding_owner.id)
-            highest_fran_pick.updatePick(current_owner.id)
+        message += process_match_release_player("FRAN", "release", 1)
         f_player.upForBid = False
 
     # make sure all owners madeBid attribute is set to False
     owners = Owner.query.all()
     for o in owners:
         o.madeBid = False
-    message = ''
 
     t_player = get_next_player("TRANS", biddingState.number)
     if t_player:
@@ -129,8 +118,8 @@ def start_bid():
 
 def get_bidding_command(arg):
     pwd = os.getcwd()
-    program = os.path.join(pwd, "venv/bin/python")
-    script_to_run = os.path.join(pwd, "bidding.py")
+    program = os.path.join(pwd, "Calvinball/venv/bin/python")
+    script_to_run = os.path.join(pwd, "Calvinball/bidding.py")
     command = f"{program} {script_to_run} {arg} "
     return command
 
@@ -252,6 +241,33 @@ def process_bids(player, tag, bids):
         print(message)
     return was_no_bids
 
+#copied from views.py - should really just be in one place
+def process_match_release_player(tag_type, decision, draft_round):
+    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(Player.tag == tag_type).scalar()
+    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(Bid.winningBid== True).scalar()
+    winning_pick = winning_bid.draftPick
+    current_owner = Owner.query.get(player_up_for_bid.owner.id)
+    bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)
+
+    if decision == 'match':  # keep player
+        # could do lots of things... but really don't need to do anything
+        message = "{0} has decided to keep {1} at a price of ${2}." \
+            .format(current_owner.team_name,
+                    player_up_for_bid.name,
+                    winning_bid.amount
+                    )
+    else:  # release player
+        player_up_for_bid.update_owner(bidding_owner.id)
+        if winning_pick:
+            DraftPick.query.filter(
+                and_(DraftPick.pickInRound == winning_pick, DraftPick.draftRound == draft_round)).scalar().update_pick(
+                current_owner.id)
+        message = "{0} has decided to let {1} take his talents to {2}." \
+            .format(current_owner.team_name,
+                    player_up_for_bid.name,
+                    bidding_owner.team_name)
+    message += "\n"
+    return message
 
 if __name__ == '__main__':
     app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
