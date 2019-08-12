@@ -132,14 +132,20 @@ def stop_bid():
     t_bids = get_bids(t_player)
     f_bids = get_bids(f_player)
 
-    was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids)
-    was__no_fran_bid = process_bids(f_player, 'FRAN', f_bids)
+    if t_bids:
+        was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids) or False
+    else:
+        was_no_trans_bid = True
+    if f_bids:
+        was__no_fran_bid = process_bids(f_player, 'FRAN', f_bids) or False
+    else:
+        was__no_fran_bid = True
 
     # update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
 
-    t_player.finishedBidding = True
-    f_player.finishedBidding = True
+    if t_player: t_player.finishedBidding = True
+    if f_player: f_player.finishedBidding = True
     db.session.commit()
 
     if was__no_fran_bid and was_no_trans_bid:
@@ -170,8 +176,9 @@ def stop_bid():
 
 
 def get_bids(player):
-    all_bids = Bid.query.filter(Bid.player_id == player.id).all()
-    return [b for b in all_bids if b.amount > 0]
+    if player:
+        all_bids = Bid.query.filter(Bid.player_id == player.id).all()
+        return [b for b in all_bids if b.amount > 0]
 
 
 def highest_bid(bids):
