@@ -197,12 +197,18 @@ def bidding():
         fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
         current_owner = Owner.query.get(session.get('owner').get('id'))
         if current_owner.madeBid:
-            t_bid = Bid.query.filter(Bid.player_id == trans_player.id) \
-                .filter(Bid.owner_bidding_id == current_owner.id) \
-                .scalar()
-            f_bid = Bid.query.filter(Bid.player_id == fran_player.id) \
-                .filter(Bid.owner_bidding_id == current_owner.id) \
-                .scalar()
+            if trans_player is not None:
+                t_bid = Bid.query.filter(Bid.player_id == trans_player.id) \
+                    .filter(Bid.owner_bidding_id == current_owner.id) \
+                    .scalar()
+            else:
+                t_bid = None
+            if fran_player is not None:
+                f_bid = Bid.query.filter(Bid.player_id == fran_player.id) \
+                    .filter(Bid.owner_bidding_id == current_owner.id) \
+                    .scalar()
+            else:
+                f_bid = None
         else:
             t_bid = None
             f_bid = None
@@ -256,11 +262,14 @@ def bidding():
             if invalid_bid:
                 return redirect(url_for('main.bidding'))
             else:
-                t_bid = Bid(player_id=trans_player.id, owner_bidding_id=current_owner.id, amount=trans_player_bid,
+                if trans_player is not None:
+                    t_bid = Bid(player_id=trans_player.id, owner_bidding_id=current_owner.id, amount=trans_player_bid,
                             bounty=trans_bounty)
-                f_bid = Bid(player_id=fran_player.id, owner_bidding_id=current_owner.id, amount=fran_player_bid,
+                    db.session.add(t_bid)
+                if fran_player is not None:
+                    f_bid = Bid(player_id=fran_player.id, owner_bidding_id=current_owner.id, amount=fran_player_bid,
                             bounty=fran_bounty)
-                db.session.add_all([t_bid, f_bid])
+                    db.session.add(f_bid)
 
                 current_owner.madeBid = True
                 session['owner'] = current_owner.to_dict()
@@ -280,13 +289,15 @@ def reset_bids():
     current_owner = Owner.query.get(session.get('owner').get('id'))
 
     # find bid for transPlayer with current_owner, delete it
-    t_bid = Bid.query.filter(Bid.player_id == trans_player.id).filter(
-        Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
-    db.session.delete(t_bid)
+    if trans_player:
+        t_bid = Bid.query.filter(Bid.player_id == trans_player.id).filter(
+            Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
+        db.session.delete(t_bid)
     # find bid for franPlayer with current_owner, delete it
-    f_bid = Bid.query.filter(Bid.player_id == fran_player.id).filter(
-        Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
-    db.session.delete(f_bid)
+    if fran_player:
+        f_bid = Bid.query.filter(Bid.player_id == fran_player.id).filter(
+            Bid.owner_bidding_id == session.get('owner').get('id')).scalar()
+        db.session.delete(f_bid)
 
     current_owner.madeBid = False
     session['owner'] = current_owner.to_dict()

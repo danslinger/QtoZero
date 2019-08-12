@@ -86,6 +86,7 @@
       <div class="row">
         <div class="col-sm-12 col-xs-12">
           <h1>Your bids on the current players</h1>
+          {% if tBid  %}
           <div class="col-sm-6 col-xs-12">
             <h2>Transition Player</h2>
             <table class="table table-condensed table-striped">
@@ -107,6 +108,8 @@
               </tbody>
             </table>
           </div>
+          {% endif %}
+          {% if fBid  %}
           <div class="col-sm-6 col-xs-12">
             <h2>Franchise Player</h2>
             <table class="table table-condensed table-striped">
@@ -128,6 +131,8 @@
               </tbody>
             </table>
           </div>
+          {% endif %}
+
         </div>
       </div>
       <div class="row">
