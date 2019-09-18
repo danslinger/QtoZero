@@ -15,7 +15,7 @@ def my_split(s, delim=None):
 
 # week = 3
 league_id = 31348
-year = 2018
+year = 2019
 url = f'http://www55.myfantasyleague.com/{year}/export'
 channel = 'QB_Tracker'
 
@@ -63,29 +63,29 @@ def report_to_date_usage(bot):
 
 def get_week_number(today=None):
     '''
-    This week number is based on the 2017 NFL season.  In the future it'd be nice if you
+    This week number is based on the 2019 NFL season.  In the future it'd be nice if you
     made it so it was season agnostic, but I'm not sure how to do that.  Maybe via
     an http request somewhere?  Anyway, this is probably overly complicated...
     '''
     if not today:
         today = date.today()
-    weeks = {'1': [date(2018, 9, 4), date(2018, 9, 10)],
-             '2': [date(2018, 9, 11), date(2018, 9, 17)],
-             '3': [date(2018, 9, 18), date(2018, 9, 24)],
-             '4': [date(2018, 9, 25), date(2018, 10, 1)],
-             '5': [date(2018, 10, 2), date(2018, 10, 8)],
-             '6': [date(2018, 10, 9), date(2018, 10, 15)],
-             '7': [date(2018, 10, 16), date(2018, 10, 22)],
-             '8': [date(2018, 10, 23), date(2018, 10, 29)],
-             '9': [date(2018, 10, 30), date(2018, 11, 5)],
-             '10': [date(2018, 11, 6), date(2018, 11, 12)],
-             '11': [date(2018, 11, 13), date(2018, 11, 19)],
-             '12': [date(2018, 11, 20), date(2018, 11, 26)],
-             '13': [date(2018, 11, 27), date(2018, 12, 3)],
-             '14': [date(2018, 12, 4), date(2018, 12, 10)],
-             '15': [date(2018, 12, 11), date(2018, 12, 17)],
-             '16': [date(2018, 12, 18), date(2018, 12, 24)],
-             '17': [date(2018, 12, 25), date(2018, 12, 31)],
+    weeks = {'1': [date(2019, 9, 3), date(2019, 9, 9)],
+             '2': [date(2019, 9, 10), date(2019, 9, 16)],
+             '3': [date(2019, 9, 17), date(2019, 9, 23)],
+             '4': [date(2019, 9, 24), date(2019, 9, 30)],
+             '5': [date(2019, 10, 1), date(2019, 10, 7)],
+             '6': [date(2019, 10, 8), date(2019, 10, 14)],
+             '7': [date(2019, 10, 15), date(2019, 10, 21)],
+             '8': [date(2019, 10, 22), date(2019, 10, 28)],
+             '9': [date(2019, 10, 29), date(2019, 11, 4)],
+             '10': [date(2019, 11, 5), date(2019, 11, 11)],
+             '11': [date(2019, 11, 12), date(2019, 11, 18)],
+             '12': [date(2019, 11, 19), date(2019, 11, 25)],
+             '13': [date(2019, 11, 26), date(2019, 12, 2)],
+             '14': [date(2019, 12, 3), date(2019, 12, 9)],
+             '15': [date(2019, 12, 10), date(2019, 12, 16)],
+             '16': [date(2019, 12, 17), date(2019, 12, 23)],
+             '17': [date(2019, 12, 24), date(2020, 1, 1)],
              }
     for weekNumber, weekDates in weeks.items():
         if weekDates[1] >= today >= weekDates[0]:
