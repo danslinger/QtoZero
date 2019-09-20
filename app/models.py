@@ -171,8 +171,8 @@ class Player(db.Model):
         self.status = contract_info.get('status') or "FA"  # all should have this.  Not sure why I added or "FA"
         self.salary = contract_info.get('salary')
         self.mfl_team = self.set_mfl_team_from_mfl_id(mfl_id)
-        if (self.contractStatus == "K"):
-            print(self.name, contract_info.get('contractInfo'), contract_info.get('contractStatus'))
+        # if self.contractStatus == "K":
+        #     print(self.name, contract_info.get('contractInfo'), contract_info.get('contractStatus'))
 
     def update_owner(self, new_owner_id):
         self.previous_owner_id = self.mfl_team
