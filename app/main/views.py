@@ -427,7 +427,7 @@ def get_both_decisions():
 @main.route('/probowl', methods=['GET'])
 @login_required
 def probowl():
-    return redirect(url_for('main.index'))
+    # return redirect(url_for('main.index'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     division = Division.query.get(current_owner.division_id)
     positions = ['QB', 'RB', 'WR', 'TE', 'PK', 'Def']
@@ -446,7 +446,7 @@ def probowl():
 
 @main.route('/probowl/setLineup', methods=['POST'])
 def set_probowl_lineup():
-    cutoff_time = datetime.datetime(2018,12,30,10)
+    cutoff_time = datetime.datetime(2019,12,29,10)
     if datetime.datetime.now() > cutoff_time:
         flash("Games started.  Can't submit roster changes")
     else:
