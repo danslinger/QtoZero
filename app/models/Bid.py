@@ -29,8 +29,7 @@ class Bid(db.Model):
         elif bounty is not None:
             self.draftPick = bounty
 
-    # FIXME
-    # def __repr__(self):
-    #     player_name = Player.query.get(self.player_id).name
-    #     owner_name = Owner.query.get(self.owner_bidding_id).team_name
-    #     return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(player_name, owner_name, self.amount)
+    def __repr__(self):
+        player_name = self.player.name
+        owner_name = self.owner_bidding.team_name
+        return '<Player: {0}; Bidding Team: {1}; Amount: ${2}>'.format(player_name, owner_name, self.amount)

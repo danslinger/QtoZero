@@ -110,11 +110,12 @@ class Player(db.Model):
         self.previous_owner_id = self.mfl_team
         self.mfl_team = new_owner_id
 
-    @staticmethod
-    def set_mfl_team_from_mfl_id(mfl_id):
-        # FIXME
-        return
-        # return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
+    # @staticmethod
+    # def set_mfl_team_from_mfl_id(mfl_id):
+    #     # FIXME This is only used in player_setup.py
+        # This should be re-worked
+    #     return
+    #     # return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
 
     @staticmethod
     def name_swap(name_str):

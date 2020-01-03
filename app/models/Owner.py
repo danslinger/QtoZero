@@ -35,11 +35,11 @@ class Owner(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def keepers(self):
-        # FIXME
-        return
+        # FIXME This may not work
         # # pylint: disable=no-member
         # return self.players.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).count()
         # # write a query to return the number of keepers on a roster
+        return self.players.filter_by(contractStatus="K").fliter_by(contractYear="1").count()
 
     def to_dict(self):
         d = {
@@ -58,14 +58,10 @@ class Owner(UserMixin, db.Model):
         }
         return d
 
-    # def has_pick(self, rd):
-        # FIXME
+    def has_pick(self, rd):
         # pylint: disable=no-member
-        # picks = self.draftPicks.filter(DraftPick.draftRound == rd).all()
-        # if picks:
-        #     return True
-        # else:
-        #     return False
+        picks = self.draftPicks.filter_by(draftRound=rd).all()
+        return bool(picks)
 
     def __repr__(self):
         return '<Owner %r>' % self.team_name
