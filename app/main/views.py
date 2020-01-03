@@ -11,7 +11,7 @@ from SlackBot import SlackBot
 from . import main
 from .forms import LoginForm
 from .. import db
-from ..models import Owner, Player, Bid, DraftPick, States, Division, ProbowlRoster
+from app.models import Owner, Player, Bid, DraftPick, States, Division, ProbowlRoster
 # from ...local_settings import let_bot_post
 
 bot = SlackBot()
@@ -21,6 +21,7 @@ letBotPost = False
 image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
 _TAGS = ['FRAN', 'SFRAN', 'TRANS']
 
+# pylint: disable=no-member
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
