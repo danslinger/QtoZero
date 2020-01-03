@@ -18,3 +18,5 @@ qbTrackerTest.py
 tokens.py
 local_settings.py
 .idea
+venv3
+settings.json
