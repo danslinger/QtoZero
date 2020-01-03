@@ -112,7 +112,9 @@ class Player(db.Model):
 
     @staticmethod
     def set_mfl_team_from_mfl_id(mfl_id):
-        return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
+        # FIXME
+        return
+        # return Owner.query.filter_by(mfl_team_id=mfl_id).first().id
 
     @staticmethod
     def name_swap(name_str):

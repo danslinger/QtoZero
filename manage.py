@@ -3,7 +3,13 @@ import os
 from flask_migrate import Migrate
 from app import create_app, db
 from app.models.Owner import Owner
-from app.models import Player, DraftPick, Bid, States, Score, Division, ProbowlRoster
+from app.models.Player import Player
+from app.models.DraftPick import DraftPick
+from app.models.Bid import Bid
+from app.models.States import States
+from app.models.Score import Score
+from app.models.Division import Division
+from app.models.ProbowlRoster import ProbowlRoster
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 
 migrate = Migrate(app, db)

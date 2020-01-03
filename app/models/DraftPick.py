@@ -1,5 +1,4 @@
 from .. import db
-from . import Owner
 
 
 class DraftPick(db.Model):
@@ -13,6 +12,7 @@ class DraftPick(db.Model):
     def update_pick(self, new_owner_id):
         self.owner_id = new_owner_id
 
-    def __repr__(self):
-        owner_name = Owner.query.get(self.owner_id)
-        return '<Round:{0}; Pick:{1}; Owner:{2}>'.format(self.draftRound, self.pickInRound, owner_name)
+    # FIXME
+    # def __repr__(self):
+    #     owner_name = Owner.query.get(self.owner_id)
+    #     return '<Round:{0}; Pick:{1}; Owner:{2}>'.format(self.draftRound, self.pickInRound, owner_name)

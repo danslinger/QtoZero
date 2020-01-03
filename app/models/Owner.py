@@ -3,8 +3,6 @@ from sqlalchemy.sql.expression import and_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .. import db, login_manager
-from .Player import Player
-from .DraftPick import DraftPick
 
 
 class Owner(UserMixin, db.Model):
@@ -17,9 +15,9 @@ class Owner(UserMixin, db.Model):
     mfl_team_id = db.Column(db.String(16))
     phone = db.Column(db.String(16))
     twitter = db.Column(db.String(32))
-    players = db.relationship(Player, backref='owner', lazy='dynamic')
+    players = db.relationship('Player', backref='owner', lazy='dynamic')
     keeperSet = db.Column(db.Boolean, default=False)
-    draftPicks = db.relationship(DraftPick, backref='owner', lazy='dynamic')
+    draftPicks = db.relationship('DraftPick', backref='owner', lazy='dynamic')
     madeBid = db.Column(db.Boolean, default=False)
     image_name = db.Column(db.String(128))
     two_qbs = db.Column(db.Integer, default=0)
@@ -37,9 +35,11 @@ class Owner(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def keepers(self):
-        # pylint: disable=no-member
-        return self.players.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).count()
-        # write a query to return the number of keepers on a roster
+        # FIXME
+        return
+        # # pylint: disable=no-member
+        # return self.players.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).count()
+        # # write a query to return the number of keepers on a roster
 
     def to_dict(self):
         d = {
@@ -58,13 +58,14 @@ class Owner(UserMixin, db.Model):
         }
         return d
 
-    def has_pick(self, rd):
+    # def has_pick(self, rd):
+        # FIXME
         # pylint: disable=no-member
-        picks = self.draftPicks.filter(DraftPick.draftRound == rd).all()
-        if picks:
-            return True
-        else:
-            return False
+        # picks = self.draftPicks.filter(DraftPick.draftRound == rd).all()
+        # if picks:
+        #     return True
+        # else:
+        #     return False
 
     def __repr__(self):
         return '<Owner %r>' % self.team_name
