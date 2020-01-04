@@ -289,7 +289,7 @@ def process_match_release_player(tag_type, decision, draft_round):
                     winning_bid.amount
                     )
     else:  # release player
-        player_up_for_bid.update_owner(bidding_owner.id)
+        player_up_for_bid.owner = bidding_owner.id
         if winning_pick:
             DraftPick.query.filter(
                 and_(DraftPick.pickInRound == winning_pick, DraftPick.draftRound == draft_round)).scalar().update_pick(
@@ -304,7 +304,7 @@ def process_match_release_player(tag_type, decision, draft_round):
 
 if __name__ == '__main__':
     create_app(os.getenv('FLASK_CONFIG')
-              or 'default').app_context().push()
+               or 'default').app_context().push()
     action = sys.argv[1]
 
     if action == 'stop_bid':

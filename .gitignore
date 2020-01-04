@@ -3,7 +3,6 @@
 ignore
 venv
 owner_setup.py
-player_setup.py
 calvinball.wsgi
 draft_setup.py
 migrations-test
