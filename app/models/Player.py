@@ -23,7 +23,7 @@ class Player(db.Model):
     kffl_id = db.Column(db.String(32))
     sportsdata_id = db.Column(db.String(32))
     cbs_id = db.Column(db.String(32))
-    twitter_username = db.column(db.String(32))
+    twitter_username = db.Column(db.String(32))
     mfl_team = db.Column(db.Integer, db.ForeignKey('owners.id'))
     previous_owner_id = db.Column(db.Integer)
     salary = db.Column(db.Integer)
