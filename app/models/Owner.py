@@ -1,5 +1,4 @@
 from flask_login import UserMixin
-from sqlalchemy.sql.expression import and_
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .. import db, login_manager
@@ -39,7 +38,7 @@ class Owner(UserMixin, db.Model):
         # # pylint: disable=no-member
         # return self.players.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).count()
         # # write a query to return the number of keepers on a roster
-        return self.players.filter_by(contractStatus="K").fliter_by(contractYear="1").count()
+        return self.players.filter_by(contractStatus="K").filter_by(contractYear="1").count()
 
     def to_dict(self):
         d = {
