@@ -3,7 +3,12 @@ import requests
 import json
 from tokens import tokens
 from app import db, create_app
-from app.models import States, Player, Owner, Bid, DraftPick, ProbowlRoster
+from app.models.states import States
+from app.models.player import Player
+from app.models.owner import Owner
+from app.models.bid import Bid
+from app.models.draft_pick import DraftPick
+from app.models.pro_bowl_roster import ProbowlRoster
 import csv
 
 league_id = 31348
@@ -40,7 +45,7 @@ def get_scores(roster):
 
 
 if __name__ == '__main__':
-    app = create_app('probowl').app_context().push()
+    create_app('probowl').app_context().push()
     rosters = ProbowlRoster.query.all()
     scores = {}
     for roster in rosters:
@@ -51,7 +56,7 @@ if __name__ == '__main__':
         for i in list(scores.keys()):
             team_names.append(Owner.query.get(i).team_name)
             team_names.append(',')
-        header =[''] + team_names
+        header = [''] + team_names
         csv_writer.writerow(header)
         rows = {'QB': ['QB'], 'RB1': ['RB1'],
                 'RB2': ['RB2'], 'WR1': ['WR1'],
@@ -80,4 +85,3 @@ if __name__ == '__main__':
         csv_writer.writerow(rows['K'])
         csv_writer.writerow(rows['DST'])
         csv_writer.writerow(rows['FLEX'])
-

@@ -1,9 +1,11 @@
-import requests, json
+import requests
+import json
 import tokens
 
 
 class SlackBot(object):
     """docstring for SlackBot"""
+
     def __init__(self):
         super(SlackBot, self).__init__()
         self.base_url = "https://slack.com/api/"
@@ -32,4 +34,3 @@ class SlackBot(object):
 
         # So, should really be doing error checking here,
         # but I'm skipping it for now.
-

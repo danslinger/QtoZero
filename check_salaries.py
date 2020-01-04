@@ -1,11 +1,11 @@
-import player_setup
-from app.models import Owner
-from app import create_app
 import os
-from tokens import tokens
-from SlackBot import SlackBot
 import json
 import requests
+import player_setup
+from app.models.owner import Owner
+from app import create_app
+from tokens import tokens
+from SlackBot import SlackBot
 
 
 league_id = 31348
@@ -19,7 +19,8 @@ bot = SlackBot()
 
 def calculate_salary(owner):
     total = sum(p.salary for p in owner.players if p.status == "ROSTER")
-    total += sum(p.salary * .30 for p in owner.players if p.status == "INJURED RESERVE")
+    total += sum(p.salary * .30 for p in owner.players if p.status ==
+                 "INJURED RESERVE")
     return total
 
 
@@ -47,7 +48,8 @@ def get_league_info():
 def identify_owners_over_cap(salary_cap_limits):
     over_the_cap = dict()
     for owner_id, cap_limit in salary_cap_limits.items():
-        total_salary = calculate_salary(Owner.query.filter_by(mfl_team_id=owner_id).first())
+        total_salary = calculate_salary(
+            Owner.query.filter_by(mfl_team_id=owner_id).first())
         if total_salary > int(cap_limit):
             over_the_cap[owner_id] = {'cap_limit': cap_limit,
                                       'total_salary': total_salary,
@@ -102,7 +104,7 @@ def check_player_count():
 
 if __name__ == '__main__':
     player_setup.main()
-    app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
+    create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
     league_data = get_league_info()
     check_salary_cap(league_data)
     check_player_count()

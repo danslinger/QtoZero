@@ -2,7 +2,6 @@ import json
 import requests
 from tokens import tokens
 from .. import db
-from . import Owner
 
 league_id = 31348
 year = 2019

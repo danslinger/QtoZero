@@ -1,3 +1,5 @@
+'''
+'''
 import datetime
 import itertools
 import os
@@ -8,14 +10,20 @@ from flask_login import login_required, login_user, logout_user
 from sqlalchemy.sql.expression import or_, and_
 
 from SlackBot import SlackBot
+
+
+from app.models.owner import Owner
+from app.models.player import Player
+from app.models.draft_pick import DraftPick
+from app.models.bid import Bid
+from app.models.states import States
+from app.models.division import Division
+from app.models.pro_bowl_roster import ProbowlRoster
 from . import main
 from .forms import LoginForm
 from .. import db
-from app.models import Owner, Player, Bid, DraftPick, States, Division, ProbowlRoster
-# from ...local_settings import let_bot_post
 
 bot = SlackBot()
-# ts = TaskScheduler()
 letBotPost = False
 
 image_host = "https://darkwater80.github.io/IMAGES/ICONS/2017/"
