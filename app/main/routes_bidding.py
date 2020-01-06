@@ -18,6 +18,7 @@ bot = SlackBot()
 
 # pylint: disable=singleton-comparison
 
+
 @main.route('/bidding', methods=['GET', 'POST'])
 @login_required
 def bidding():
@@ -62,7 +63,8 @@ def bidding():
                                    )
 
         if request.method == 'POST':
-            # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that
+            # This is where you make a bid, set that the owner made a bid,
+            # then return stuff for the bidding page that
             # indicates the owner has made a bid on a player
             fran_player_bid = int(request.form.get('franPlayerBid') or 0)
             trans_player_bid = int(request.form.get('transPlayerBid') or 0)
@@ -95,11 +97,15 @@ def bidding():
                 return redirect(url_for('main.bidding'))
             else:
                 if trans_player is not None:
-                    t_bid = Bid(player_id=trans_player.id, owner_bidding_id=current_owner.id, amount=trans_player_bid,
+                    t_bid = Bid(player_id=trans_player.id,
+                                owner_bidding_id=current_owner.id,
+                                amount=trans_player_bid,
                                 bounty=trans_bounty)
                     db.session.add(t_bid)
                 if fran_player is not None:
-                    f_bid = Bid(player_id=fran_player.id, owner_bidding_id=current_owner.id, amount=fran_player_bid,
+                    f_bid = Bid(player_id=fran_player.id,
+                                owner_bidding_id=current_owner.id,
+                                amount=fran_player_bid,
                                 bounty=fran_bounty)
                     db.session.add(f_bid)
 
@@ -247,8 +253,9 @@ def process_match_release_player(tag_type, decision, draft_round):
         player_up_for_bid.owner = bidding_owner.id
         if winning_pick:
             DraftPick.query.filter(
-                and_(DraftPick.pickInRound == winning_pick, DraftPick.draftRound == draft_round)).scalar().update_pick(
-                current_owner.id)
+                and_(DraftPick.pickInRound == winning_pick,
+                     DraftPick.draftRound == draft_round)
+            ).scalar().update_pick(current_owner.id)
         message = "{0} has decided to let {1} take his talents to {2}." \
             .format(current_owner.team_name,
                     player_up_for_bid.name,
