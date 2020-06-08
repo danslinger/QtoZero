@@ -18,3 +18,4 @@ qbTrackerTest.py
 tokens.py
 local_settings.py
 .idea
+.vscode
