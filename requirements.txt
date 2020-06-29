@@ -22,7 +22,7 @@ Pillow==5.2.0
 python-crontab==2.3.4
 python-dateutil==2.7.3
 python-editor==0.4
-requests==2.19.1
+requests==2.20.0
 six==1.11.0
 SQLAlchemy==1.0.9
 style==1.1.0
