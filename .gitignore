@@ -3,7 +3,6 @@
 ignore
 venv
 owner_setup.py
-player_setup.py
 calvinball.wsgi
 draft_setup.py
 migrations-test
@@ -20,4 +19,6 @@ local_settings.py
 .idea
 venv3
 settings.json
+.pep8
+.env
 .vscode

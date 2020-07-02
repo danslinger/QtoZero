@@ -9,13 +9,18 @@ from sqlalchemy import and_
 from SlackBot import SlackBot
 from TaskScheduler import TaskScheduler
 from app import db, create_app
-from app.models import States, Player, Owner, Bid, DraftPick
+from app.models.owner import Owner
+from app.models.player import Player
+from app.models.draft_pick import DraftPick
+from app.models.bid import Bid
+from app.models.states import States
 from local_settings import let_bot_post
 
 bot = SlackBot()
 ts = TaskScheduler()
 timeFormatString = '%A %B %d at %I:%M%p'
 letBotPost = let_bot_post
+# pylint: disable=singleton-comparison
 
 
 def get_random_player(player_type):
@@ -29,19 +34,18 @@ def get_random_player(player_type):
 
 
 def get_next_player(player_type, playerIndex):
-    if player_type == "FRAN":
-        return get_next_fran(playerIndex)
-    else:
-        return get_next_tran(playerIndex)
+    return get_next_fran(playerIndex) if player_type == "FRAN" else get_next_tran(playerIndex)
+
 
 
 def get_next_fran(playerIndex):
+    # These were called out specifically because we were announcing the draft order
+    # Should really write a function that does the randomness, then stores the order in
+    # its own table.  Then get_next_player can take the tag type and get the next
+    # player from that table.
     fps = [Player.query.get(280), Player.query.get(322), Player.query.get(461)]
 
-    if playerIndex < len(fps):
-        return fps[playerIndex]
-    else:
-        return None
+    return fps[playerIndex] if playerIndex < len(fps) else None
 
 
 def get_next_tran(playerIndex):
@@ -84,7 +88,8 @@ def start_bid():
         t_player.upForBid = False
     if f_player:  # not the first time
         # if owner of franchise pick didn't make a decision, the player changes hands
-        message += process_match_release_player("FRAN", "release", 1)
+        if not franchise_decision_made:
+            message += process_match_release_player("FRAN", "release", 1)
         f_player.upForBid = False
 
     # make sure all owners madeBid attribute is set to False
@@ -162,8 +167,10 @@ def stop_bid():
     # update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
 
-    if t_player: t_player.finishedBidding = True
-    if f_player: f_player.finishedBidding = True
+    if t_player:
+        t_player.finishedBidding = True
+    if f_player:
+        f_player.finishedBidding = True
     db.session.commit()
 
     if was__no_fran_bid and was_no_trans_bid:
@@ -179,9 +186,10 @@ def stop_bid():
         command = get_bidding_command("start_bid")
         start_job = ts.get_job('STARTBID', command)
         ts.set_job(start_job, start_time)
-        message = "Owners must match or release by {0}.  New players will be available to pick at that time".format(
-            start_time.strftime(timeFormatString))
-        message += "  If both are matched or released before then, new players will be available at that time"
+        message = "Owners must match or release by {0}.  New players will be available to pick " \
+                  "at that time".format(start_time.strftime(timeFormatString))
+        message += "  If both are matched or released before then, new players will be available" \
+                   " at that time"
         message += "  I'll send a message when new players are available."
 
     if letBotPost:
@@ -235,7 +243,8 @@ def process_bids(player, tag, bids):
             bounty_string = "Pick {0} in the {1} round".format(
                 winning_bid.draftPick, 'first' if tag == "FRAN" else "second")
 
-        message += "{0} has the highest bid on {1} at ${2} and will give up {3} if the bid is not matched" \
+        message += "{0} has the highest bid on {1} at ${2} and will give up {3} " \
+            "if the bid is not matched" \
             .format(Owner.query.get(winning_bid.owner_bidding_id).team_name,
                     player.name,
                     winning_bid.amount,
@@ -289,7 +298,7 @@ def process_match_release_player(tag_type, decision, draft_round):
                     winning_bid.amount
                     )
     else:  # release player
-        player_up_for_bid.update_owner(bidding_owner.id)
+        player_up_for_bid.owner = bidding_owner.id
         if winning_pick:
             DraftPick.query.filter(
                 and_(

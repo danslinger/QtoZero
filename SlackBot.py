@@ -4,6 +4,7 @@ from tokens import tokens
 
 class SlackBot(object):
     """docstring for SlackBot"""
+
     def __init__(self):
         super(SlackBot, self).__init__()
 

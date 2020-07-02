@@ -6,7 +6,8 @@ import requests
 
 from SlackBot import SlackBot
 from app import db, create_app
-from app.models import Player, Owner
+from app.models.player import Player
+from app.models.owner import Owner
 
 
 def my_split(s, delim=None):
@@ -43,7 +44,8 @@ def get_starting_lineups(url, league_id, week):
     r = requests.get(url, params=payload)
     data = r.json()['weeklyResults']
 
-    teams = {f['id']: my_split(f['starters'], ',') for m in data['matchup'] for f in m['franchise']}
+    teams = {f['id']: my_split(f['starters'], ',')
+             for m in data['matchup'] for f in m['franchise']}
     return teams
 
 
@@ -94,11 +96,12 @@ def get_week_number(today=None):
 
 
 if __name__ == '__main__':
-    app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
+    create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
     if len(sys.argv) > 1:
         week = sys.argv[1]
     else:
-        week = int(get_week_number()) - 1  # getWeekNumber gets current week.  We want last weeks
+        # getWeekNumber gets current week.  We want last weeks
+        week = int(get_week_number()) - 1
     startingLineups = get_starting_lineups(url, league_id, week)
     message = f'QB Tracker for Week {week} \n\n'
     for team_id, players in startingLineups.items():
