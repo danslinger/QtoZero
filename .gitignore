@@ -20,3 +20,4 @@ local_settings.py
 .idea
 venv3
 settings.json
+.vscode

@@ -36,7 +36,8 @@ def login():
             # session['owner_object'] = owner #stop doing this!! You can't serialize the owner object
             # (well, maybe.  You can look into that) BUT STOP TRYING THIS
             # flash('You were successfully logged in')
-            return redirect(request.args.get('next') or url_for('main.probowl'))
+            return redirect(
+                request.args.get('next') or url_for('main.probowl'))
         else:
             flash('Incorrect Email or Password')
     return render_template('login.html', form=form)
@@ -45,10 +46,12 @@ def login():
 @main.route('/')
 @login_required
 def index():
-    roster = Owner.query.filter_by(mfl_team_id=session['mfl_id']).first().players
+    roster = Owner.query.filter_by(
+        mfl_team_id=session['mfl_id']).first().players
     team_name = session.get('owner').get('team_name')
     logo_url = image_host + session.get('owner').get('image_name')
-    available_players = Player.query.filter(or_(Player.contractStatus == "T", Player.contractStatus == "F"))
+    available_players = Player.query.filter(
+        or_(Player.contractStatus == "T", Player.contractStatus == "F"))
     return render_template('index.html',
                            roster=roster,
                            teamname=team_name,
@@ -79,7 +82,9 @@ def keepers():
     if request.method == 'GET':
         if current_owner.keeperSet:
             roster = Player.query.filter_by(owner=current_owner).filter(
-                or_(and_(Player.contractStatus == "K", Player.contractYear != "0"),
+                or_(
+                    and_(Player.contractStatus == "K",
+                         Player.contractYear != "0"),
                     Player.tag.in_(_TAGS))).all()
             team_name = session.get('team_name')
             logo_url = image_host + session.get('owner').get('image_name')
@@ -89,7 +94,8 @@ def keepers():
                                    logo_url=logo_url,
                                    keeperSet=True)
         else:
-            roster = Owner.query.filter_by(mfl_team_id=session.get('mfl_id')).first().players
+            roster = Owner.query.filter_by(
+                mfl_team_id=session.get('mfl_id')).first().players
             team_name = session.get('team_name')
             logo_url = image_host + session.get('owner').get('image_name')
 
@@ -101,7 +107,9 @@ def keepers():
 
     if request.method == 'POST':
         # Get list of players selected
-        players = {k: v for k, v in request.form.items() if v}  # filters to just submitted items
+        players = {k: v
+                   for k, v in request.form.items()
+                   if v}  # filters to just submitted items
         # Verify keeper slots
         error = check_keeper_count(players)
         if error:
@@ -139,7 +147,9 @@ def check_keeper_count(players):
             flash("Too many keepers were selected")
             error = True
     if posted_s_fran_count + posted_trans_count + posted_fran_count > 2:
-        flash("Too many tags.  At most 2 tags from Super Franchise, Franchise or Transition")
+        flash(
+            "Too many tags.  At most 2 tags from Super Franchise, Franchise or Transition"
+        )
         error = True
     if posted_fran_count > 1:
         flash("Can only select Franchise tag once")
@@ -160,15 +170,15 @@ def tags():
     trans_players = Player.query.filter(Player.tag == "TRANS").all()
     super_fran_players = Player.query.filter(Player.tag == "SFRAN").all()
     k2players = Player.query.filter(Player.contractYear == "2").all()
-    k1players = Player.query.filter(and_(Player.contractStatus == "K", Player.contractYear == "1")).all()
+    k1players = Player.query.filter(
+        and_(Player.contractStatus == "K", Player.contractYear == "1")).all()
 
     return render_template('tagged_players.html',
                            fplayers=fran_players,
                            tplayers=trans_players,
                            sfplayers=super_fran_players,
                            k2players=k2players,
-                           k1players=k1players
-                           )
+                           k1players=k1players)
 
 
 @main.route('/reset_keepers', methods=['POST'])
@@ -177,7 +187,8 @@ def reset_keepers():
     # get current owner
     current_owner = Owner.query.get(session.get('owner').get('id'))
     # get players that have tags or are k2s and reset
-    tagged_players = Player.query.filter_by(owner=current_owner).filter(Player.tag.in_(_TAGS)).all()
+    tagged_players = Player.query.filter_by(owner=current_owner).filter(
+        Player.tag.in_(_TAGS)).all()
     k2s = Player.query.filter_by(owner=current_owner).filter(
         and_(Player.contractStatus == "K", Player.contractYear == "2")).all()
     for p in itertools.chain(tagged_players, k2s):
@@ -193,8 +204,10 @@ def reset_keepers():
 def bidding():
     bidding_on = States.query.filter(States.name == 'biddingOn').scalar().bools
     if bidding_on:
-        trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
-        fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+        trans_player = Player.query.filter(Player.upForBid == True).filter(
+            Player.tag == "TRANS").scalar()
+        fran_player = Player.query.filter(Player.upForBid == True).filter(
+            Player.tag == "FRAN").scalar()
         current_owner = Owner.query.get(session.get('owner').get('id'))
         if current_owner.madeBid:
             if trans_player is not None:
@@ -214,20 +227,25 @@ def bidding():
             f_bid = None
 
         if request.method == 'GET':
-            round1_picks = [pick.pickInRound for pick in
-                            current_owner.draftPicks.filter(DraftPick.draftRound == 1).all()]
-            round2_picks = [pick.pickInRound for pick in
-                            current_owner.draftPicks.filter(DraftPick.draftRound == 2).all()]
-            return render_template('bidding.html',
-                                   transPlayer=trans_player,
-                                   franPlayer=fran_player,
-                                   biddingOn=bidding_on,
-                                   tBid=t_bid,
-                                   fBid=f_bid,
-                                   madeBid=current_owner.madeBid,
-                                   round1Picks=round1_picks,
-                                   round2Picks=round2_picks,
-                                   )
+            round1_picks = [
+                pick.pickInRound for pick in current_owner.draftPicks.filter(
+                    DraftPick.draftRound == 1).all()
+            ]
+            round2_picks = [
+                pick.pickInRound for pick in current_owner.draftPicks.filter(
+                    DraftPick.draftRound == 2).all()
+            ]
+            return render_template(
+                'bidding.html',
+                transPlayer=trans_player,
+                franPlayer=fran_player,
+                biddingOn=bidding_on,
+                tBid=t_bid,
+                fBid=f_bid,
+                madeBid=current_owner.madeBid,
+                round1Picks=round1_picks,
+                round2Picks=round2_picks,
+            )
 
         if request.method == 'POST':
             # This is where you make a bid, set that the owner made a bid, then return stuff for the bidding page that
@@ -256,19 +274,25 @@ def bidding():
                 flash("Minimum bid for a Transition Player is $20")
                 invalid_bid = True
             if trans_player_bid > 100 or fran_player_bid > 100:
-                flash("Over $100?  Really?  This isn't Brandon Jackson.  Try again...")
+                flash(
+                    "Over $100?  Really?  This isn't Brandon Jackson.  Try again..."
+                )
                 invalid_bid = True
 
             if invalid_bid:
                 return redirect(url_for('main.bidding'))
             else:
                 if trans_player is not None:
-                    t_bid = Bid(player_id=trans_player.id, owner_bidding_id=current_owner.id, amount=trans_player_bid,
-                            bounty=trans_bounty)
+                    t_bid = Bid(player_id=trans_player.id,
+                                owner_bidding_id=current_owner.id,
+                                amount=trans_player_bid,
+                                bounty=trans_bounty)
                     db.session.add(t_bid)
                 if fran_player is not None:
-                    f_bid = Bid(player_id=fran_player.id, owner_bidding_id=current_owner.id, amount=fran_player_bid,
-                            bounty=fran_bounty)
+                    f_bid = Bid(player_id=fran_player.id,
+                                owner_bidding_id=current_owner.id,
+                                amount=fran_player_bid,
+                                bounty=fran_bounty)
                     db.session.add(f_bid)
 
                 current_owner.madeBid = True
@@ -284,8 +308,10 @@ def bidding():
 @main.route('/reset_bids', methods=['POST'])
 @login_required
 def reset_bids():
-    trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
-    fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+    trans_player = Player.query.filter(Player.upForBid == True).filter(
+        Player.tag == "TRANS").scalar()
+    fran_player = Player.query.filter(Player.upForBid == True).filter(
+        Player.tag == "FRAN").scalar()
     current_owner = Owner.query.get(session.get('owner').get('id'))
 
     # find bid for transPlayer with current_owner, delete it
@@ -309,35 +335,46 @@ def reset_bids():
 @login_required
 def match():
     bidding_on = States.query.filter(States.name == 'biddingOn').scalar().bools
-    franchise_decision_made = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
-    transition_decision_made = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').scalar().bools
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').scalar().bools
     if bidding_on:  # make sure no one comes here on accident
         return redirect(url_for('main.bidding'))
     else:
         # get the current players up for bid
-        trans_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
-        fran_player = Player.query.filter(Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+        trans_player = Player.query.filter(Player.upForBid == True).filter(
+            Player.tag == "TRANS").scalar()
+        fran_player = Player.query.filter(Player.upForBid == True).filter(
+            Player.tag == "FRAN").scalar()
 
         # get the winning transition and franchise bids
         # bidding.py stop_bid() should have run, so can get winning bid via queries
-        winning_trans_bid = Bid.query.filter(Bid.player_id == trans_player.id).filter(Bid.winningBid == True).scalar()
-        winning_fran_bid = Bid.query.filter(Bid.player_id == fran_player.id).filter(Bid.winningBid == True).scalar()
+        winning_trans_bid = Bid.query.filter(
+            Bid.player_id == trans_player.id).filter(
+                Bid.winningBid == True).scalar()
+        winning_fran_bid = Bid.query.filter(
+            Bid.player_id == fran_player.id).filter(
+                Bid.winningBid == True).scalar()
 
-        return render_template('match.html',
-                               transPlayer=trans_player,
-                               franPlayer=fran_player,
-                               tBid=winning_trans_bid,
-                               fBid=winning_fran_bid,
-                               franchiseDecisionMade=franchise_decision_made,
-                               transitionDecisionMade=transition_decision_made,
-                               )
+        return render_template(
+            'match.html',
+            transPlayer=trans_player,
+            franPlayer=fran_player,
+            tBid=winning_trans_bid,
+            fBid=winning_fran_bid,
+            franchiseDecisionMade=franchise_decision_made,
+            transitionDecisionMade=transition_decision_made,
+        )
 
 
 @main.route('/match_trans', methods=['POST'])
 @login_required
 def match_trans():
-    message = process_match_release_player("TRANS", request.form.get('transMatch'), 2)
-    transition_decision_made = States.query.filter(States.name == 'transitionDecisionMade').scalar()
+    message = process_match_release_player("TRANS",
+                                           request.form.get('transMatch'), 2)
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').scalar()
     transition_decision_made.bools = True
     db.session.commit()
 
@@ -348,11 +385,13 @@ def match_trans():
         # startJob = ts.get_job('STARTBID')
         # ts.set_job(startJob, startTime)
         pwd = os.getcwd()
-        subprocess.call([os.path.join(pwd,'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
-                         'start_bid'])
+        subprocess.call([
+            os.path.join(pwd, 'venv/bin/python'),
+            os.path.join(pwd, 'bidding.py'), 'start_bid'
+        ])
 
     if letBotPost:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
     return redirect(url_for('main.match'))
@@ -361,8 +400,10 @@ def match_trans():
 @main.route('/match_fran', methods=['POST'])
 @login_required
 def match_fran():
-    message = process_match_release_player("FRAN", request.form.get('franMatch'), 1)
-    franchise_decision_made = States.query.filter(States.name == 'franchiseDecisionMade').scalar()
+    message = process_match_release_player("FRAN",
+                                           request.form.get('franMatch'), 1)
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').scalar()
     franchise_decision_made.bools = True
     db.session.commit()
 
@@ -373,10 +414,12 @@ def match_fran():
         # startJob = ts.get_job('STARTBID')
         # ts.set_job(startJob, startTime)
         pwd = os.getcwd()
-        subprocess.call([os.path.join(pwd, 'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
-                         'start_bid'])
+        subprocess.call([
+            os.path.join(pwd, 'venv/bin/python'),
+            os.path.join(pwd, 'bidding.py'), 'start_bid'
+        ])
     if letBotPost:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
     return redirect(url_for('main.match'))
@@ -384,8 +427,11 @@ def match_fran():
 
 # should probably move this to bidding.py and then import it from there
 def process_match_release_player(tag_type, decision, draft_round):
-    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(Player.tag == tag_type).scalar()
-    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(Bid.winningBid== True).scalar()
+    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(
+        Player.tag == tag_type).scalar()
+    winning_bid = Bid.query.filter(
+        Bid.player_id == player_up_for_bid.id).filter(
+            Bid.winningBid == True).scalar()
     winning_pick = winning_bid.draftPick
     current_owner = Owner.query.get(player_up_for_bid.owner.id)
     bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)
@@ -401,8 +447,10 @@ def process_match_release_player(tag_type, decision, draft_round):
         player_up_for_bid.update_owner(bidding_owner.id)
         if winning_pick:
             DraftPick.query.filter(
-                and_(DraftPick.pickInRound == winning_pick, DraftPick.draftRound == draft_round)).scalar().update_pick(
-                current_owner.id)
+                and_(
+                    DraftPick.pickInRound == winning_pick,
+                    DraftPick.draftRound == draft_round)).scalar().update_pick(
+                        current_owner.id)
         message = "{0} has decided to let {1} take his talents to {2}." \
             .format(current_owner.team_name,
                     player_up_for_bid.name,
@@ -419,8 +467,10 @@ def draft_order():
 
 
 def get_both_decisions():
-    franchise_decision_made = States.query.filter(States.name == 'franchiseDecisionMade').scalar().bools
-    transition_decision_made = States.query.filter(States.name == 'transitionDecisionMade').scalar().bools
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').scalar().bools
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').scalar().bools
     return franchise_decision_made and transition_decision_made
 
 
@@ -439,21 +489,25 @@ def probowl():
 
     results['FLEX'] = results['RB'] + results['WR'] + results['TE']
     current_owner_id = session.get('owner').get('id')
-    pb_roster = ProbowlRoster.query.filter(ProbowlRoster.owner_id == current_owner_id).first()
+    pb_roster = ProbowlRoster.query.filter(
+        ProbowlRoster.owner_id == current_owner_id).first()
 
-    return render_template('probowl.html', players=results, pb_roster=pb_roster)
+    return render_template('probowl.html',
+                           players=results,
+                           pb_roster=pb_roster)
 
 
 @main.route('/probowl/setLineup', methods=['POST'])
 def set_probowl_lineup():
-    cutoff_time = datetime.datetime(2019,12,29,10)
+    cutoff_time = datetime.datetime(2019, 12, 29, 10)
     if datetime.datetime.now() > cutoff_time:
         flash("Games started.  Can't submit roster changes")
     else:
         players = {k: v for k, v in request.form.items() if v}
         print(players)
         current_owner_id = session.get('owner').get('id')
-        pb_roster = ProbowlRoster.query.filter(ProbowlRoster.owner_id == current_owner_id).first()
+        pb_roster = ProbowlRoster.query.filter(
+            ProbowlRoster.owner_id == current_owner_id).first()
         if not pb_roster:
             pb_roster = ProbowlRoster(current_owner_id)
         pb_roster.update(players)

@@ -7,7 +7,6 @@ from SlackBot import SlackBot
 import json
 import requests
 
-
 league_id = 31348
 year = 2019
 url = f'http://www55.myfantasyleague.com/{year}/export'
@@ -19,7 +18,8 @@ bot = SlackBot()
 
 def calculate_salary(owner):
     total = sum(p.salary for p in owner.players if p.status == "ROSTER")
-    total += sum(p.salary * .30 for p in owner.players if p.status == "INJURED RESERVE")
+    total += sum(p.salary * .30 for p in owner.players
+                 if p.status == "INJURED RESERVE")
     return total
 
 
@@ -35,10 +35,11 @@ def get_salary_cap(league_data):
 
 
 def get_league_info():
-    payload = {'TYPE': 'league',
-               'JSON': 1,
-               'L': league_id,
-               }
+    payload = {
+        'TYPE': 'league',
+        'JSON': 1,
+        'L': league_id,
+    }
     r = requests.get(url, params=payload)
     league_data = json.loads(r.content)['league']
     return league_data
@@ -47,11 +48,14 @@ def get_league_info():
 def identify_owners_over_cap(salary_cap_limits):
     over_the_cap = dict()
     for owner_id, cap_limit in salary_cap_limits.items():
-        total_salary = calculate_salary(Owner.query.filter_by(mfl_team_id=owner_id).first())
+        total_salary = calculate_salary(
+            Owner.query.filter_by(mfl_team_id=owner_id).first())
         if total_salary > int(cap_limit):
-            over_the_cap[owner_id] = {'cap_limit': cap_limit,
-                                      'total_salary': total_salary,
-                                      'amount_over': int(cap_limit) - total_salary}
+            over_the_cap[owner_id] = {
+                'cap_limit': cap_limit,
+                'total_salary': total_salary,
+                'amount_over': int(cap_limit) - total_salary
+            }
         else:
             print(total_salary, cap_limit, owner_id)
     return over_the_cap
@@ -73,7 +77,7 @@ def check_salary_cap(league_data):
     if owners_over_the_cap:
         message = create_over_cap_message(owners_over_the_cap)
         if let_bot_post:
-            bot.post_message(channel, message)
+            bot.post_message(message, 'general_url')
         else:
             print(message)
 
@@ -95,14 +99,15 @@ def check_player_count():
     if owner_count:
         message = create_player_count_message(owner_count)
         if let_bot_post:
-            bot.post_message(channel, message)
+            bot.post_message(message, 'general_url')
         else:
             print(message)
 
 
 if __name__ == '__main__':
     player_setup.main()
-    app = create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
+    app = create_app(os.getenv('FLASK_CONFIG')
+                     or 'default').app_context().push()
     league_data = get_league_info()
     check_salary_cap(league_data)
     check_player_count()
