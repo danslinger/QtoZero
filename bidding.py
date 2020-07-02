@@ -37,6 +37,7 @@ def get_next_player(player_type, playerIndex):
     return get_next_fran(playerIndex) if player_type == "FRAN" else get_next_tran(playerIndex)
 
 
+
 def get_next_fran(playerIndex):
     # These were called out specifically because we were announcing the draft order
     # Should really write a function that does the randomness, then stores the order in
@@ -48,8 +49,12 @@ def get_next_fran(playerIndex):
 
 
 def get_next_tran(playerIndex):
-    tps = [Player.query.get(124), Player.query.get(
-        615), Player.query.get(80), Player.query.get(283)]
+    tps = [
+        Player.query.get(124),
+        Player.query.get(615),
+        Player.query.get(80),
+        Player.query.get(283)
+    ]
     if playerIndex < len(tps):
         return tps[playerIndex]
     else:
@@ -60,7 +65,8 @@ def get_next_tran(playerIndex):
 def start_bid():
     message = ''
     biddingState = States.query.filter_by(name="biddingOn").first()
-    if Player.query.filter(Player.upForBid == True).count() == 0 and biddingState.bools == False:
+    if Player.query.filter(Player.upForBid ==
+                           True).count() == 0 and biddingState.bools == False:
         biddingState.number = 0
     else:
         biddingState.number = biddingState.number + 1
@@ -126,7 +132,7 @@ def start_bid():
 
     # Post Bot Message
     if letBotPost:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
 
@@ -187,7 +193,7 @@ def stop_bid():
         message += "  I'll send a message when new players are available."
 
     if letBotPost:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
 
@@ -256,29 +262,30 @@ def process_bids(player, tag, bids):
             States.query.filter(
                 States.name == 'franchiseDecisionMade').scalar().bools = True
 
-        winning_bid = Bid(player_id=player.id,
-                          owner_bidding_id=player.owner.id,
-                          amount=amount,
-                          )
+        winning_bid = Bid(
+            player_id=player.id,
+            owner_bidding_id=player.owner.id,
+            amount=amount,
+        )
         winning_bid.winningBid = True
         message = "No one bid on {0}. He is staying put.".format(player.name)
         was_no_bids = True
         db.session.add(winning_bid)
     db.session.commit()
     if letBotPost:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
     return was_no_bids
 
-# copied from views.py - should really just be in one place
 
-
+#copied from views.py - should really just be in one place
 def process_match_release_player(tag_type, decision, draft_round):
-    player_up_for_bid = Player.query.filter(
-        Player.upForBid == True).filter(Player.tag == tag_type).scalar()
-    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(
-        Bid.winningBid == True).scalar()
+    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(
+        Player.tag == tag_type).scalar()
+    winning_bid = Bid.query.filter(
+        Bid.player_id == player_up_for_bid.id).filter(
+            Bid.winningBid == True).scalar()
     winning_pick = winning_bid.draftPick
     current_owner = Owner.query.get(player_up_for_bid.owner.id)
     bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)
@@ -294,9 +301,10 @@ def process_match_release_player(tag_type, decision, draft_round):
         player_up_for_bid.owner = bidding_owner.id
         if winning_pick:
             DraftPick.query.filter(
-                and_(DraftPick.pickInRound == winning_pick,
-                     DraftPick.draftRound == draft_round)
-            ).scalar().update_pick(current_owner.id)
+                and_(
+                    DraftPick.pickInRound == winning_pick,
+                    DraftPick.draftRound == draft_round)).scalar().update_pick(
+                        current_owner.id)
         message = "{0} has decided to let {1} take his talents to {2}." \
             .format(current_owner.team_name,
                     player_up_for_bid.name,
@@ -306,8 +314,8 @@ def process_match_release_player(tag_type, decision, draft_round):
 
 
 if __name__ == '__main__':
-    create_app(os.getenv('FLASK_CONFIG')
-               or 'default').app_context().push()
+    app = create_app(os.getenv('FLASK_CONFIG')
+                     or 'default').app_context().push()
     action = sys.argv[1]
 
     if action == 'stop_bid':

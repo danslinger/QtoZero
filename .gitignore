@@ -21,3 +21,4 @@ venv3
 settings.json
 .pep8
 .env
+.vscode

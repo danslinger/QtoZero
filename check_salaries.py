@@ -47,9 +47,11 @@ def identify_owners_over_cap(salary_cap_limits):
         total_salary = calculate_salary(
             Owner.query.filter_by(mfl_team_id=owner_id).first())
         if total_salary > int(cap_limit):
-            over_the_cap[owner_id] = {'cap_limit': cap_limit,
-                                      'total_salary': total_salary,
-                                      'amount_over': int(cap_limit) - total_salary}
+            over_the_cap[owner_id] = {
+                'cap_limit': cap_limit,
+                'total_salary': total_salary,
+                'amount_over': int(cap_limit) - total_salary
+            }
         else:
             print(total_salary, cap_limit, owner_id)
     return over_the_cap
@@ -72,7 +74,7 @@ def check_salary_cap(_league_data):
     if owners_over_the_cap:
         message = create_over_cap_message(owners_over_the_cap)
         if let_bot_post:
-            bot.post_message(channel, message)
+            bot.post_message(message, 'general_url')
         else:
             print(message)
 
@@ -94,7 +96,7 @@ def check_player_count():
     if owner_count:
         message = create_player_count_message(owner_count)
         if let_bot_post:
-            bot.post_message(channel, message)
+            bot.post_message(message, 'general_url')
         else:
             print(message)
 
