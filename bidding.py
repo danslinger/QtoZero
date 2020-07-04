@@ -4,7 +4,7 @@ import random
 import sys
 from operator import attrgetter
 
-from sqlalchemy import and_
+from sqlalchemy import and_, true
 
 from SlackBot import SlackBot
 from TaskScheduler import TaskScheduler
@@ -37,7 +37,6 @@ def get_next_player(player_type, playerIndex):
     return get_next_fran(playerIndex) if player_type == "FRAN" else get_next_tran(playerIndex)
 
 
-
 def get_next_fran(playerIndex):
     # These were called out specifically because we were announcing the draft order
     # Should really write a function that does the randomness, then stores the order in
@@ -65,17 +64,16 @@ def get_next_tran(playerIndex):
 def start_bid():
     message = ''
     biddingState = States.query.filter_by(name="biddingOn").first()
-    if Player.query.filter(Player.upForBid ==
-                           True).count() == 0 and biddingState.bools == False:
+    if Player.query.filter(Player.upForBid == true()).count() == 0 and biddingState.bools is False:
         biddingState.number = 0
     else:
         biddingState.number = biddingState.number + 1
 
     # get the t_player and f_player.  None if first time - previous player bid if not
     t_player = Player.query.filter(Player.tag == 'TRANS').filter(
-        Player.upForBid == True).scalar()
+        Player.upForBid == true()).scalar()
     f_player = Player.query.filter(Player.tag == 'FRAN').filter(
-        Player.upForBid == True).scalar()
+        Player.upForBid == true()).scalar()
     franchise_decision_made = States.query.filter(
         States.name == 'franchiseDecisionMade').scalar().bools
     transition_decision_made = States.query.filter(
@@ -148,9 +146,9 @@ def get_bidding_command(arg):
 def stop_bid():
     # get the t_player and f_player
     t_player = Player.query.filter(Player.tag == 'TRANS').filter(
-        Player.upForBid == True).scalar()
+        Player.upForBid == true()).scalar()
     f_player = Player.query.filter(Player.tag == 'FRAN').filter(
-        Player.upForBid == True).scalar()
+        Player.upForBid == true()).scalar()
 
     t_bids = get_bids(t_player)
     f_bids = get_bids(f_player)
@@ -234,7 +232,7 @@ def process_bids(player, tag, bids):
     if bids:
         winning_bid = highest_bid(bids)
         winning_bid.winningBid = True
-        if winning_bid.bounty == True:
+        if winning_bid.bounty is True:
             if tag == 'TRANS':
                 bounty_string = "$15 FAAB"
             else:
@@ -279,13 +277,13 @@ def process_bids(player, tag, bids):
     return was_no_bids
 
 
-#copied from views.py - should really just be in one place
+# copied from views.py - should really just be in one place
 def process_match_release_player(tag_type, decision, draft_round):
-    player_up_for_bid = Player.query.filter(Player.upForBid == True).filter(
+    player_up_for_bid = Player.query.filter(Player.upForBid == true()).filter(
         Player.tag == tag_type).scalar()
     winning_bid = Bid.query.filter(
         Bid.player_id == player_up_for_bid.id).filter(
-            Bid.winningBid == True).scalar()
+            Bid.winningBid == true()).scalar()
     winning_pick = winning_bid.draftPick
     current_owner = Owner.query.get(player_up_for_bid.owner.id)
     bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)

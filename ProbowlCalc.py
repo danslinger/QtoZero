@@ -1,19 +1,16 @@
-import os
 import requests
 import json
 from tokens import tokens
-from app import db, create_app
-from app.models.states import States
+from app import create_app
 from app.models.player import Player
 from app.models.owner import Owner
-from app.models.bid import Bid
-from app.models.draft_pick import DraftPick
 from app.models.pro_bowl_roster import ProbowlRoster
+from constants import LEAGUE_ID, YEAR, MFL_URL
 import csv
 
-league_id = 31348
-year = 2019
-url = f'http://www55.myfantasyleague.com/{year}/export'
+league_id = LEAGUE_ID
+year = YEAR
+url = MFL_URL
 api_token = tokens['mfl_token']
 
 

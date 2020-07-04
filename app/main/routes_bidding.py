@@ -2,7 +2,7 @@ import os
 import subprocess
 from flask import render_template, redirect, request, url_for, flash, session
 from flask_login import login_required
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, true
 
 from app.models.owner import Owner
 from app.models.player import Player
@@ -25,9 +25,9 @@ def bidding():
     bidding_on = States.query.filter(States.name == 'biddingOn').scalar().bools
     if bidding_on:
         trans_player = Player.query.filter(
-            Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+            Player.upForBid == true()).filter(Player.tag == "TRANS").scalar()
         fran_player = Player.query.filter(
-            Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+            Player.upForBid == true()).filter(Player.tag == "FRAN").scalar()
         current_owner = Owner.query.get(session.get('owner').get('id'))
         if current_owner.madeBid:
             if trans_player is not None:
@@ -123,9 +123,9 @@ def bidding():
 @login_required
 def reset_bids():
     trans_player = Player.query.filter(
-        Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+        Player.upForBid == true()).filter(Player.tag == "TRANS").scalar()
     fran_player = Player.query.filter(
-        Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+        Player.upForBid == true()).filter(Player.tag == "FRAN").scalar()
     current_owner = Owner.query.get(session.get('owner').get('id'))
 
     # find bid for transPlayer with current_owner, delete it
@@ -158,16 +158,16 @@ def match():
     else:
         # get the current players up for bid
         trans_player = Player.query.filter(
-            Player.upForBid == True).filter(Player.tag == "TRANS").scalar()
+            Player.upForBid == true()).filter(Player.tag == "TRANS").scalar()
         fran_player = Player.query.filter(
-            Player.upForBid == True).filter(Player.tag == "FRAN").scalar()
+            Player.upForBid == true()).filter(Player.tag == "FRAN").scalar()
 
         # get the winning transition and franchise bids
         # bidding.py stop_bid() should have run, so can get winning bid via queries
         winning_trans_bid = Bid.query.filter(
-            Bid.player_id == trans_player.id).filter(Bid.winningBid == True).scalar()
+            Bid.player_id == trans_player.id).filter(Bid.winningBid == true()).scalar()
         winning_fran_bid = Bid.query.filter(
-            Bid.player_id == fran_player.id).filter(Bid.winningBid == True).scalar()
+            Bid.player_id == fran_player.id).filter(Bid.winningBid == true()).scalar()
 
         return render_template('match.html',
                                transPlayer=trans_player,
@@ -190,7 +190,7 @@ def match_trans():
     db.session.commit()
 
     both_decisions = get_both_decisions()
-    if both_decisions == True:
+    if both_decisions is True:
         # get start bid job and redo it so it happens now
         # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
         # startJob = ts.get_job('STARTBID')
@@ -200,7 +200,7 @@ def match_trans():
                          'start_bid'])
 
     if let_bot_post:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
     return redirect(url_for('main.match'))
@@ -217,7 +217,7 @@ def match_fran():
     db.session.commit()
 
     both_decisions = get_both_decisions()
-    if both_decisions == True:
+    if both_decisions is True:
         # get start bid job and redo it so it happens now
         # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
         # startJob = ts.get_job('STARTBID')
@@ -226,7 +226,7 @@ def match_fran():
         subprocess.call([os.path.join(pwd, 'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
                          'start_bid'])
     if let_bot_post:
-        bot.post_message('general', message)
+        bot.post_message(message, 'general_url')
     else:
         print(message)
     return redirect(url_for('main.match'))
@@ -235,9 +235,9 @@ def match_fran():
 # should probably move this to bidding.py and then import it from there
 def process_match_release_player(tag_type, decision, draft_round):
     player_up_for_bid = Player.query.filter(
-        Player.upForBid == True).filter(Player.tag == tag_type).scalar()
+        Player.upForBid == true()).filter(Player.tag == tag_type).scalar()
     winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(
-        Bid.winningBid == True).scalar()
+        Bid.winningBid == true()).scalar()
     winning_pick = winning_bid.draftPick
     current_owner = Owner.query.get(player_up_for_bid.owner.id)
     bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)

@@ -2,7 +2,7 @@ from .. import db
 
 
 class DraftPick(db.Model):
-     # pylint: disable=no-member
+    # pylint: disable=no-member
     __tablename__ = "draftpicks"
     id = db.Column(db.Integer, primary_key=True)
     draftRound = db.Column(db.Integer)

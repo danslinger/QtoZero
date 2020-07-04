@@ -100,7 +100,7 @@ def check_keeper_count(players):
 @main.route('/reset_keepers', methods=['POST'])
 @login_required
 def reset_keepers():
-     # pylint: disable=no-member
+    # pylint: disable=no-member
     # get current owner
     current_owner = Owner.query.get(session.get('owner').get('id'))
     # get players that have tags or are k2s and reset

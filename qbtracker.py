@@ -8,6 +8,7 @@ from SlackBot import SlackBot
 from app import db, create_app
 from app.models.player import Player
 from app.models.owner import Owner
+from constants import LEAGUE_ID, YEAR, MFL_URL
 
 
 def my_split(s, delim=None):
@@ -15,15 +16,15 @@ def my_split(s, delim=None):
 
 
 # week = 3
-league_id = 31348
-year = 2019
-url = f'http://www55.myfantasyleague.com/{year}/export'
+league_id = LEAGUE_ID
+year = YEAR
+url = MFL_URL
 channel = 'qb_tracker_url'
 
 
 def get_starting_lineups(url, league_id, week):
     '''
-        Returns a dictionary of team ids and their starting lineups.  Example:  
+        Returns a dictionary of team ids and their starting lineups.  Example:
         {
             "0004":[
                     "9817",
@@ -60,7 +61,7 @@ def report_to_date_usage(bot):
         remaining = 6 - t.two_qbs
         msg += f'{t.team_name}: {remaining}/6 remaining\n\n'
 
-    bot.post_message msg, channel)
+    bot.post_message(msg, channel)
 
 
 def get_week_number(today=None):
