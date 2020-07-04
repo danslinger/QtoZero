@@ -2,7 +2,7 @@ from .. import db
 
 
 class Bid(db.Model):
-     # pylint: disable=no-member
+    # pylint: disable=no-member
     __tablename__ = "bids"
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('players.id'))
