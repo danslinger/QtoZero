@@ -39,7 +39,7 @@ class Owner(UserMixin, db.Model):
 
     @property
     def image_name(self):
-        return f'images/{self.last_name}{YEAR}.png'
+        return f'images/{self.last_name.upper()}{YEAR}.png'
 
     def keepers(self):
         # FIXME This may not work
