@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .. import db, login_manager
+from constants import YEAR
 
 
 class Owner(UserMixin, db.Model):
@@ -18,7 +19,6 @@ class Owner(UserMixin, db.Model):
     keeperSet = db.Column(db.Boolean, default=False)
     draftPicks = db.relationship('DraftPick', backref='owner', lazy='dynamic')
     madeBid = db.Column(db.Boolean, default=False)
-    image_name = db.Column(db.String(128))
     two_qbs = db.Column(db.Integer, default=0)
     division_id = db.Column(db.Integer, db.ForeignKey('division.id'))
 
@@ -32,6 +32,14 @@ class Owner(UserMixin, db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def last_name(self):
+        return self.name.split(" ")[1]
+
+    @property
+    def image_name(self):
+        return f'images/{self.last_name}{YEAR}.png'
 
     def keepers(self):
         # FIXME This may not work

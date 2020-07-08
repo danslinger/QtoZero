@@ -1,37 +1,33 @@
-{% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-{% block title%}Calvinball Fantasy Football{% endblock %}
-
-{% block page_content %}
+{% extends "base.html" %} {% import "bootstrap/wtf.html" as wtf %} {% block
+title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
 
 <div class="col-sm-6">
-<!-- <img src="{{ url_for('static', filename='images/')}}{{ logo_url }}"> -->
-<h1>Contacts</h1>
-   
-<table class="table">
-<thead>
-    <tr>
+  <!-- <img src="{{ url_for('static', filename='images/')}}{{ logo_url }}"> -->
+  <h1>Contacts</h1>
+
+  <table class="table">
+    <thead>
+      <tr>
         <th>Team</th>
         <th>Owner</th>
         <th>Email</th>
         <th>Phone</th>
-    </tr>
-</thead>
-<tbody>
-    {% for owner in owners %}
-    <tr>
-        <td><img src="{{ image_host }}{{ owner.image_name}}" style="width: 100%;"></td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for owner in owners %}
+      <tr>
+        <td>
+          <img src={{ url_for('static', filename= owner.image_name) }}
+          style="width: 100%;">
+        </td>
         <td>{{owner.name}}</td>
         <td>{{owner.email}}</td>
         <td class="text-nowrap">{{owner.phone}}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-
-</div>  
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% endblock %}}
-
-
-

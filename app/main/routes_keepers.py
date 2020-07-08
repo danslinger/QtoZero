@@ -5,7 +5,7 @@ from sqlalchemy.sql.expression import or_, and_
 
 from app.models.owner import Owner
 from app.models.player import Player
-from constants import IMAGE_HOST, _TAGS
+from constants import _TAGS
 from . import main
 from .. import db
 
@@ -23,7 +23,7 @@ def keepers():
                 or_(and_(Player.contractStatus == "K", Player.contractYear != "0"),
                     Player.tag.in_(_TAGS))).all()
             team_name = session.get('team_name')
-            logo_url = IMAGE_HOST + session.get('owner').get('image_name')
+            logo_url = session.get('owner').get('image_name')
             return render_template('keepers.html',
                                    roster=roster,
                                    teamname=team_name,
@@ -33,7 +33,7 @@ def keepers():
             roster = Owner.query.filter_by(
                 mfl_team_id=session.get('mfl_id')).first().players
             team_name = session.get('team_name')
-            logo_url = IMAGE_HOST + session.get('owner').get('image_name')
+            logo_url = session.get('owner').get('image_name')
 
             return render_template('keepers.html',
                                    roster=roster,

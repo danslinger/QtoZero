@@ -14,7 +14,7 @@
 {% block page_content %}
 
 <div class="col-sm-8">
-<img src="{{ logo_url }}" width="400">
+<img src={{ url_for('static', filename=logo_url) }} width="400">
 {% block messages %}{{super()}}{% endblock%}
 <h1>And we're BAAAAAAAAAAAACK.. Calvinball <strike>2018</strike>2019</h1>
 <!-- <div id="calendar"></div> -->

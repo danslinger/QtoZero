@@ -4,7 +4,6 @@ from sqlalchemy.sql.expression import or_
 
 from app.models.owner import Owner
 from app.models.player import Player
-from constants import IMAGE_HOST
 from . import main
 from .forms import LoginForm
 
@@ -23,7 +22,7 @@ def login():
             # session['owner_object'] = owner #stop doing this!! You can't serialize the owner object
             # (well, maybe.  You can look into that) BUT STOP TRYING THIS
             # flash('You were successfully logged in')
-            return redirect(request.args.get('next') or url_for('main.probowl'))
+            return redirect(request.args.get('next') or url_for('main.index'))
         else:
             flash('Incorrect Email or Password')
     return render_template('login.html', form=form)
@@ -35,7 +34,7 @@ def index():
     roster = Owner.query.filter_by(
         mfl_team_id=session['mfl_id']).first().players
     team_name = session.get('owner').get('team_name')
-    logo_url = IMAGE_HOST + session.get('owner').get('image_name')
+    logo_url = session.get('owner').get('image_name')
     available_players = Player.query.filter(
         or_(Player.contractStatus == "T", Player.contractStatus == "F"))
     return render_template('index.html',
