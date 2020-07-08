@@ -22,7 +22,8 @@ bot = SlackBot()
 @main.route('/bidding', methods=['GET', 'POST'])
 @login_required
 def bidding():
-    bidding_on = States.query.filter(States.name == 'biddingOn').scalar().bools
+    bidding_on_state = States.query.filter(States.name == 'biddingOn').scalar()
+    bidding_on = bidding_on_state.bools if bidding_on_state else False
     if bidding_on:
         trans_player = Player.query.filter(
             Player.upForBid == true()).filter(Player.tag == "TRANS").scalar()
@@ -115,8 +116,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else:  # bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        # return "Bidding is off right now.  Just go back."
-        return redirect(url_for('main.match'))
+        return "Bidding is off right now.  Just go back."
+        # return redirect(url_for('main.match'))
 
 
 @main.route('/reset_bids', methods=['POST'])
