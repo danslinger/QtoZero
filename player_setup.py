@@ -14,10 +14,11 @@ def get_all_players():
     ''' Gets all the players from MFL that are positions our league uses'''
     payload = {'TYPE': 'players',
                'JSON': 1,
-               'DETAILS': 1
+               'DETAILS': 1,
+               'L': LEAGUE_ID,
+               'APIKEY': api_token
                }
     r = requests.get(MFL_URL, params=payload)
-    print(r.url)
     data = json.loads(r.content)
     mfl_players = data['players']['player']
     calvinball_players = [
