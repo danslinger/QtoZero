@@ -75,11 +75,19 @@ class Player(db.Model):
             "contract_info": 1 # represents the years remaining on the contract
         }
         """
-        self.contractYear = contract_info.get('contractInfo')
+        self.contractYear = self.temporary_converter(contract_info.get('drafted'))
         self.contractStatus = contract_info.get('contractStatus')
         # all should have this.  Not sure why I added or "FA"
         self.status = contract_info.get('status') or "FA"
         self.salary = contract_info.get('salary')
+
+    def temporary_converter(self,drafted):
+        if drafted == "KEPT '18":
+            return 0
+        elif drafted == "KEPT '19":
+            return 1
+        else:
+            return 0
 
     @staticmethod
     def name_swap(name_str):

@@ -5,7 +5,7 @@ from sqlalchemy.sql.expression import or_, and_
 
 from app.models.owner import Owner
 from app.models.player import Player
-from constants import _TAGS
+from constants import _TAGS, YEAR
 from . import main
 from .. import db
 
@@ -28,7 +28,8 @@ def keepers():
                                    roster=roster,
                                    teamname=team_name,
                                    logo_url=logo_url,
-                                   keeperSet=True)
+                                   keeperSet=True,
+                                   year=YEAR)
         else:
             roster = Owner.query.filter_by(
                 mfl_team_id=session.get('mfl_id')).first().players
@@ -39,7 +40,8 @@ def keepers():
                                    roster=roster,
                                    teamname=team_name,
                                    logo_url=logo_url,
-                                   keeperSet=False)
+                                   keeperSet=False,
+                                   year=YEAR)
 
     if request.method == 'POST':
         # Get list of players selected

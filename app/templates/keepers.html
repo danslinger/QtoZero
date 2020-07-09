@@ -30,15 +30,20 @@ title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
                 class="form-control"
               >
                 <option selected=""></option>
-                {% if player.contractStatus == "S" or (player.contractStatus ==
-                "K" and player.contractYear == "0") %} {% if not
-                (player.contractStatus == "K" and player.contractYear == "0") %}
+                {% if player.contractStatus == "K" and player.contractYear ==
+                "1" %}
+                <option>Must keep this player for this year</option>
+                {% elif player.contractStatus == "S" or (player.contractStatus
+                == "K" and player.contractYear == "0") %} {% if
+                not(player.contractStatus == "K" and player.contractYear == "0")
+                %}
                 <option value="K">Keep</option>
                 {% endif %}}
                 <option value="SFRAN">Super Franchise</option>
                 <option value="FRAN">Franchise</option>
                 <option value="TRANS">Transition</option>
-                {% else %}
+
+                {%else%}
                 <option>Cannot Keep Or Tag Player</option>
                 {% endif %}
               </select>
@@ -57,27 +62,27 @@ title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
       <h4>Super Franchise Tag Contract Values</h4>
       <ul class="list-group">
         <li class="list-group-item">
-          <span class="badge">$38</span>
+          <span class="badge">$32</span>
           Quarterback
         </li>
         <li class="list-group-item">
-          <span class="badge">$43</span>
+          <span class="badge">$50</span>
           Running Back
         </li>
         <li class="list-group-item">
-          <span class="badge">$49</span>
+          <span class="badge">$41</span>
           Wide Receiver
         </li>
         <li class="list-group-item">
-          <span class="badge">$23</span>
+          <span class="badge">$22</span>
           Tight End
         </li>
         <li class="list-group-item">
-          <span class="badge">$8</span>
+          <span class="badge">$7</span>
           Defense
         </li>
         <li class="list-group-item">
-          <span class="badge">$STFU</span>
+          <span class="badge">Sorry Gage, no Kickers</span>
           Kicker
         </li>
       </ul>
@@ -103,7 +108,7 @@ title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
         <th>Name</th>
         <th>NFL Team</th>
         <th>Contract</th>
-        <th>Salary (2019)</th>
+        <th>Salary ({{year}})</th>
       </tr>
     </thead>
     <tbody>
