@@ -36,10 +36,24 @@
 
 .pastChamps {
   display: block;
-  margin: auto;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 10px;
 }
 
 .banner {
   margin-top: 10px;
   width: 400px;
+}
+
+.row {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-wrap: wrap;
+}
+.row > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
 }
