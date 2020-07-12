@@ -41,12 +41,6 @@ class Player(db.Model):
         self.mfl_id = mfl_dict.get('id')
         self.position = mfl_dict.get('position')
 
-    def update_contract_info(self, contract_info):
-        self.contractYear = contract_info.get('contractYear')
-        self.contractStatus = contract_info.get('contractStatus')
-        self.status = contract_info.get('status') or "FA"
-        self.salary = contract_info.get('salary')
-
     def reset_contract_info(self, current_owner_id):
         payload = {'TYPE': 'rosters',
                    'JSON': 1,
@@ -58,7 +52,7 @@ class Player(db.Model):
         roster = json.loads(r.content)
         for data in roster['rosters']['franchise']['player']:
             if data.get('id') == self.mfl_id:
-                self.update_contract_info(data)
+                self.update_roster_info(data)
                 self.tag = None
                 break
 
