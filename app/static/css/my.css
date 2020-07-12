@@ -33,3 +33,13 @@
 #my {
   margin-bottom: 0px;
 }
+
+.pastChamps {
+  display: block;
+  margin: auto;
+}
+
+.banner {
+  margin-top: 10px;
+  width: 400px;
+}

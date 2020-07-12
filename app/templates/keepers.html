@@ -2,7 +2,7 @@
 title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
 <div class="col-md-1"></div>
 <div class="col-sm-9 col-xs-12">
-  <img src={{ url_for('static', filename=logo_url) }} width="400"> {% block
+  <img src={{ url_for('static', filename=logo_url) }} class="banner"> {% block
   messages %}{{super()}}{% endblock%} {% if not keeperSet %}
   <div class="row">
     <div class="col-lg-9 col-xs-12">

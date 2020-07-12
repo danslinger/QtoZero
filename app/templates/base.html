@@ -68,11 +68,10 @@ block head %} {{ super() }}
 {% endblock %} {% block content %}
 <div class="container-fluid">
   <div class="row" id="mainContent">
-    <div class="col-md-3 hidden-sm hidden-xs bg-primary">
+    <div class="col-md-2 hidden-sm hidden-xs bg-primary">
       <!-- <img src="{{ url_for('static', filename='images/BANNER2016.png') }}"> -->
-      <img
-        src="https://darkwater80.github.io/IMAGES/ICONS/2017/Past_Champs.png"
-      />
+      <img src={{url_for('static', filename='images/PAST_CHAMPS.png')}}
+      class="pastChamps" />
     </div>
     {% block page_content %} {% block messages %} {% with messages =
     get_flashed_messages() %} {% if messages %} {% for message in messages %}
