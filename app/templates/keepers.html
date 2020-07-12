@@ -17,7 +17,9 @@ title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
               #}
               <div class="input-group-addon playerName">{{player.name}}</div>
               <div class="input-group-addon playerItem">{{player.team}}</div>
-              <div class="input-group-addon playerItem">${{player.salary}}</div>
+              <div class="input-group-addon playerItem">
+                ${{player.salary - 5}}
+              </div>
               <div class="input-group-addon playerStatus">
                 {% if player.contractStatus == "K" and player.contractYear ==
                 "0" %}{{player.contractStatus}}(0){% else %}{{
@@ -119,7 +121,7 @@ title%}Calvinball Fantasy Football{% endblock %} {% block page_content %}
         <td>{{player.contractStatus}}</td>
         <td>
           {% if player.contractStatus in ['TRANS', 'FRAN', 'SFRAN']%} TBD {%
-          else %} {{player.salary +5}} {% endif %}
+          else %} {{player.salary}} {% endif %}
         </td>
       </tr>
       {% endfor %}
