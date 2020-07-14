@@ -12,7 +12,7 @@ from .forms import LoginForm
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        owner = Owner.query.filter_by(email=form.email.data).first()
+        owner = Owner.query.filter_by(email=form.email.data.lower()).first()
         if owner is not None and owner.verify_password(form.password.data):
             login_user(owner, form.remember_me.data)
             session['team_name'] = owner.team_name
