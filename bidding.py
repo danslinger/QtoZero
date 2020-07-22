@@ -236,7 +236,8 @@ def highest_bid(bids):
 
 
 def get_bid_with_highest_pick(winning_bids):
-    highest_draft_pick = min(winning_bids, key=attrgetter('draftPick')) or None
+    bids_with_pics = [b for b in winning_bids if b.draftPick is not None]
+    highest_draft_pick = min(bids_with_pics, key=attrgetter('draftPick')) or None
     if highest_draft_pick is None:
         return winning_bids[0]  # For now, just whoever put their bid in first
     else:
