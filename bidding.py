@@ -245,11 +245,9 @@ def get_bid_with_highest_pick(winning_bids):
 
 # noinspection PyUnboundLocalVariable
 def process_bids(player, tag, bids):
-
-
-''' This processes the bids at stop bid time'''
-  message = ''
-   if bids:
+    ''' This processes the bids at stop bid time'''
+    message = ''
+    if bids:
         winning_bid = highest_bid(bids)
         winning_bid.winningBid = True
         if winning_bid.bounty is True:
