@@ -45,8 +45,8 @@ def get_next_fran(playerIndex):
     fps = [
         Player.query.get(33),
         Player.query.get(77),
-        Player.query.get(144)
-        Player.query.get(163)
+        Player.query.get(144),
+        Player.query.get(163),
         Player.query.get(197)
     ]
 
@@ -71,24 +71,17 @@ def get_next_tran(playerIndex):
         return None
 
 
-# noinspection SpellCheckingInspection
-def start_bid():
+def cleanup_previous_round():
     message = ''
-    biddingState = States.query.filter_by(name="biddingOn").first()
-    if Player.query.filter(Player.upForBid == true()).count() == 0 and biddingState.bools is False:
-        biddingState.number = 0
-    else:
-        biddingState.number = biddingState.number + 1
-
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').first().bools
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').first().bools
     # get the t_player and f_player.  None if first time - previous player bid if not
     t_player = Player.query.filter(Player.tag == 'TRANS').filter(
-        Player.upForBid == true()).scalar()
+        Player.upForBid == true()).first()
     f_player = Player.query.filter(Player.tag == 'FRAN').filter(
-        Player.upForBid == true()).scalar()
-    franchise_decision_made = States.query.filter(
-        States.name == 'franchiseDecisionMade').scalar().bools
-    transition_decision_made = States.query.filter(
-        States.name == 'transitionDecisionMade').scalar().bools
+        Player.upForBid == true()).first()
 
     if t_player:  # not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
@@ -100,6 +93,23 @@ def start_bid():
         if not franchise_decision_made:
             message += process_match_release_player("FRAN", "release", 1)
         f_player.upForBid = False
+    return message
+
+
+def start_bid():
+    message = ''
+    biddingState = States.query.filter_by(name="biddingOn").first()
+    if Player.query.filter(Player.upForBid == true()).count() == 0 and biddingState.bools is False:
+        biddingState.number = 0
+    else:
+        biddingState.number = biddingState.number + 1
+
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').scalar().bools
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').scalar().bools
+
+    message = cleanup_previous_round()
 
     # make sure all owners madeBid attribute is set to False
     owners = Owner.query.all()
@@ -109,24 +119,20 @@ def start_bid():
     t_player = get_next_player("TRANS", biddingState.number)
     if t_player:
         t_player.upForBid = True
-        States.query.filter(
-            States.name == 'transitionDecisionMade').scalar().bools = False
-        message += 'The transition player now up for bid is {0}.\n'.format(
-            t_player.name)
+        transition_decision_made = False
+        message += 'The transition player now up for bid is {0}.\n'.format(t_player.name)
     else:
         message += 'There are no transition players up for bid.\n'
 
     f_player = get_next_player("FRAN", biddingState.number)
     if f_player:
         f_player.upForBid = True
-        States.query.filter(
-            States.name == 'franchiseDecisionMade').scalar().bools = False
-        message += 'The franchise player now up for bid is {0}.\n'.format(
-            f_player.name)
+        franchise_decision_made.bools = False
+        message += 'The franchise player now up for bid is {0}.\n'.format(f_player.name)
     else:
         message += 'There are no franchise players up for bid.\n'
 
-    States.query.filter(States.name == 'biddingOn').scalar().bools = True
+    biddingState.bools = True
 
     print(f_player, t_player)
     db.session.commit()
@@ -239,8 +245,11 @@ def get_bid_with_highest_pick(winning_bids):
 
 # noinspection PyUnboundLocalVariable
 def process_bids(player, tag, bids):
-    message = ''
-    if bids:
+
+
+''' This processes the bids at stop bid time'''
+  message = ''
+   if bids:
         winning_bid = highest_bid(bids)
         winning_bid.winningBid = True
         if winning_bid.bounty is True:
@@ -290,6 +299,8 @@ def process_bids(player, tag, bids):
 
 # copied from views.py - should really just be in one place
 def process_match_release_player(tag_type, decision, draft_round):
+    ''' This processes the matching/releasing of players if the time limit was up and 
+    the previous owner didn't make a choice.'''
     player_up_for_bid = Player.query.filter(Player.upForBid == true()).filter(
         Player.tag == tag_type).scalar()
     winning_bid = Bid.query.filter(
