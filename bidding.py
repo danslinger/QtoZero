@@ -42,17 +42,28 @@ def get_next_fran(playerIndex):
     # Should really write a function that does the randomness, then stores the order in
     # its own table.  Then get_next_player can take the tag type and get the next
     # player from that table.
-    fps = [Player.query.get(280), Player.query.get(322), Player.query.get(461)]
+    fps = [
+        Player.query.get(33),
+        Player.query.get(77),
+        Player.query.get(144)
+        Player.query.get(163)
+        Player.query.get(197)
+    ]
 
     return fps[playerIndex] if playerIndex < len(fps) else None
 
 
 def get_next_tran(playerIndex):
     tps = [
-        Player.query.get(124),
-        Player.query.get(615),
-        Player.query.get(80),
-        Player.query.get(283)
+        Player.query.get(1),
+        Player.query.get(25),
+        Player.query.get(40),
+        Player.query.get(64),
+        Player.query.get(75),
+        Player.query.get(114),
+        Player.query.get(129),
+        Player.query.get(148),
+        Player.query.get(172),
     ]
     if playerIndex < len(tps):
         return tps[playerIndex]
