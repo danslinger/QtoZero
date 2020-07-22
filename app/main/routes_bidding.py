@@ -13,6 +13,7 @@ from SlackBot import SlackBot
 from local_settings import let_bot_post
 from . import main
 from .. import db
+from constants import YEAR
 
 bot = SlackBot()
 
@@ -177,6 +178,7 @@ def match():
                                fBid=winning_fran_bid,
                                franchiseDecisionMade=franchise_decision_made,
                                transitionDecisionMade=transition_decision_made,
+                               lastYear=YEAR-1
                                )
 
 
