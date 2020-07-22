@@ -127,7 +127,7 @@ def start_bid():
     f_player = get_next_player("FRAN", biddingState.number)
     if f_player:
         f_player.upForBid = True
-        franchise_decision_made.bools = False
+        franchise_decision_made = False
         message += 'The franchise player now up for bid is {0}.\n'.format(f_player.name)
     else:
         message += 'There are no franchise players up for bid.\n'
