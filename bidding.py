@@ -93,6 +93,7 @@ def cleanup_previous_round():
         if not franchise_decision_made.bools:
             message += process_match_release_player("FRAN", "release", 1)
         f_player.upForBid = False
+    db.session.commit()
     return message
 
 
@@ -170,14 +171,8 @@ def stop_bid():
     t_bids = get_bids(t_player)
     f_bids = get_bids(f_player)
 
-    if t_bids:
-        was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids) or False
-    else:
-        was_no_trans_bid = True
-    if f_bids:
-        was__no_fran_bid = process_bids(f_player, 'FRAN', f_bids) or False
-    else:
-        was__no_fran_bid = True
+    was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids)
+    was__no_fran_bid = process_bids(f_player, 'FRAN', f_bids)
 
     # update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
