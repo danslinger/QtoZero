@@ -274,13 +274,12 @@ def process_bids(player, tag, bids):
     else:
         if tag == 'TRANS':
             amount = 20
-            States.query.filter(
-                States.name == 'transitionDecisionMade').scalar().bools = True
-
+            tdm = States.query.filter(States.name == 'transitionDecisionMade').scalar()
+            tdm.bools = True
         elif tag == 'FRAN':
             amount = 30
-            States.query.filter(
-                States.name == 'franchiseDecisionMade').scalar().bools = True
+            fdm = States.query.filter(States.name == 'franchiseDecisionMade').scalar()
+            fdm.bools = True
 
         winning_bid = Bid(
             player_id=player.id,
