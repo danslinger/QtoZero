@@ -74,9 +74,9 @@ def get_next_tran(playerIndex):
 def cleanup_previous_round():
     message = ''
     franchise_decision_made = States.query.filter(
-        States.name == 'franchiseDecisionMade').first().bools
+        States.name == 'franchiseDecisionMade').first()
     transition_decision_made = States.query.filter(
-        States.name == 'transitionDecisionMade').first().bools
+        States.name == 'transitionDecisionMade').first()
     # get the t_player and f_player.  None if first time - previous player bid if not
     t_player = Player.query.filter(Player.tag == 'TRANS').filter(
         Player.upForBid == true()).first()
@@ -85,12 +85,12 @@ def cleanup_previous_round():
 
     if t_player:  # not the first time
         # if owner of transition pick didn't make a decision, the player changes hands
-        if not transition_decision_made:
+        if not transition_decision_made.bools:
             message += process_match_release_player("TRANS", "release", 2)
         t_player.upForBid = False
     if f_player:  # not the first time
         # if owner of franchise pick didn't make a decision, the player changes hands
-        if not franchise_decision_made:
+        if not franchise_decision_made.bools:
             message += process_match_release_player("FRAN", "release", 1)
         f_player.upForBid = False
     return message
@@ -105,9 +105,9 @@ def start_bid():
         biddingState.number = biddingState.number + 1
 
     franchise_decision_made = States.query.filter(
-        States.name == 'franchiseDecisionMade').scalar().bools
+        States.name == 'franchiseDecisionMade').scalar()
     transition_decision_made = States.query.filter(
-        States.name == 'transitionDecisionMade').scalar().bools
+        States.name == 'transitionDecisionMade').scalar()
 
     message = cleanup_previous_round()
 
@@ -119,7 +119,7 @@ def start_bid():
     t_player = get_next_player("TRANS", biddingState.number)
     if t_player:
         t_player.upForBid = True
-        transition_decision_made = False
+        transition_decision_made.bools = False
         message += 'The transition player now up for bid is {0}.\n'.format(t_player.name)
     else:
         message += 'There are no transition players up for bid.\n'
@@ -127,7 +127,7 @@ def start_bid():
     f_player = get_next_player("FRAN", biddingState.number)
     if f_player:
         f_player.upForBid = True
-        franchise_decision_made = False
+        franchise_decision_made.bools = False
         message += 'The franchise player now up for bid is {0}.\n'.format(f_player.name)
     else:
         message += 'There are no franchise players up for bid.\n'
