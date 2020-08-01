@@ -1,102 +1,128 @@
-{% extends "base.html" %}
-{% block title%}Calvinball Fantasy Football{% endblock %}
-{% block page_content %}
+{% extends "base.html" %} {% block title%}Calvinball Fantasy Football{% endblock
+%} {% block page_content %}
 
 <div class="col-sm-9 col-xs-12">
-
-{% block messages %}{{super()}}{% endblock%}
-<div class="row">
+  {% block messages %}{{super()}}{% endblock%}
+  <div class="row">
     <h1>Current Round Winning Bids</h1>
     <div class="col-sm-12 col-xs-12"></div>
     <div class="col-sm-6 col-xs-12">
-        <h2>Transition Player</h2>
-        {% if transPlayer.owner.id == tBid.owner_bidding.id and not transitionDecisionMade %}
-            <p>No one bid on {{transPlayer.name}}.  {{transPlayer.owner.name}} retains his services for $20.</p>
-        {% else %}
-            <table class="table table-condensed table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Highest Bidder</th>
-                        <th>Winning Bid</th>
-                        <th>Winning Team's Collateral</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{tBid.player.name}}</td>
-                        <td>{{tBid.owner_bidding.team_name}}</td>
-                        <td>${{tBid.amount}}</td>
-                        <td>{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick #{{tBid.draftPick}}{%endif%}</td>
-                    </tr>
-                </tbody>
-            </table>
-            {% if transitionDecisionMade %}
-                {% if transPlayer.previous_owner_id == session.get('owner').get('id') %}
-                    <p>You made your choice for this player already.</p>
-                {% else %}
-                    <p>The 2017 owner of this player has made their decision.</p>
-                {% endif %}
-            {% elif transPlayer.owner.id == session.get('owner').get('id') %}
-                <form method="POST" action="{{url_for('main.match_trans') }}" role="form">
-                    <div class="form-group">
-                    <label for="franMatch">Select to keep the player at the given value or release him and receive the stated compensation</label>
-                    <select id="transMatch" name="transMatch" class="form-control">
-                        <option value="match">{{tBid.player.name}} at ${{tBid.amount}}</option>
-                        <option value="release">{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick #{{tBid.draftPick}}{%endif%} and $10 FAAB</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary btn-lg">Submit Decision</button>
-                    </div>
-                </form>
-            {% endif %}
-            
-        {% endif %} {# If the player had no bids #}
+      <h2>Transition Player</h2>
+      {% if not tBid %}
+      <p>
+        No one bid on {{transPlayer.name}}. {{transPlayer.owner.name}} retains
+        his services for $20.
+      </p>
+      {% else %}
+      <table class="table table-condensed table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Highest Bidder</th>
+            <th>Winning Bid</th>
+            <th>Winning Team's Collateral</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{tBid.player.name}}</td>
+            <td>{{tBid.owner_bidding.team_name}}</td>
+            <td>${{tBid.amount}}</td>
+            <td>
+              {% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick
+              #{{tBid.draftPick}}{%endif%}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      {% if transitionDecisionMade %} {% if transPlayer.previous_owner_id ==
+      session.get('owner').get('id') %}
+      <p>You made your choice for this player already.</p>
+      {% else %}
+      <p>The {{lastYear}} owner of this player has made their decision.</p>
+      {% endif %} {% elif transPlayer.owner.id == session.get('owner').get('id')
+      %}
+      <form method="POST" action="{{url_for('main.match_trans') }}" role="form">
+        <div class="form-group">
+          <label for="franMatch"
+            >Select to keep the player at the given value or release him and
+            receive the stated compensation</label
+          >
+          <select id="transMatch" name="transMatch" class="form-control">
+            <option value="match"
+              >{{tBid.player.name}} at ${{tBid.amount}}</option
+            >
+            <option value="release"
+              >{% if tBid.bounty%} $15 FAAB {% else %}Round 2 Pick
+              #{{tBid.draftPick}}{%endif%} and $10 FAAB</option
+            >
+          </select>
+          <button type="submit" class="btn btn-primary btn-lg">
+            Submit Decision
+          </button>
+        </div>
+      </form>
+      {% endif %} {% endif %} {# If the player had no bids #}
     </div>
     <div class="col-sm-6 col-xs-12">
-        <h2>Franchise Player</h2>
-        {% if franPlayer.owner.id == fBid.owner_bidding.id and not franchiseDecisionMade %}
-            <p>No one bid on {{franPlayer.name}}.  {{franPlayer.owner.name}} retains his services for $30.</p>
-        {% else %}
-            <table class="table table-condensed table-striped">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Highest Bidder</th>
-                        <th>Winning Bid</th>
-                        <th>Winning Team's Collateral</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{fBid.player.name}}</td>
-                        <td>{{fBid.owner_bidding.team_name}}</td>
-                        <td>${{fBid.amount}}</td>
-                        <td>{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick #{{fBid.draftPick}}{%endif%}</td>
-                    </tr>
-                </tbody>
-            </table>
-            {% if franchiseDecisionMade %}
-                {% if franPlayer.previous_owner_id == session.get('owner').get('id') %}
-                <p>You made your choice for this player already.</p>
-                {% else %}
-                <p>The 2017 owner of this player has made their decision.</p>
-                {% endif %}
-            {% elif franPlayer.owner.id == session.get('owner').get('id') %} {# Logged in owners player #}
-                <form method="POST" action="{{url_for('main.match_fran') }}">
-                    <div class="form-group">
-                    <label for="franMatch">Select to keep the player at the given value or release him and receive the stated compensation</label>
-                    <select id="franMatch" name="franMatch" class="form-control">
-                        <option value="match">{{fBid.player.name}} at ${{fBid.amount}}</option>
-                        <option value="release">{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick #{{fBid.draftPick}} {%endif%}and $5 CAB</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary btn-lg">Submit Decision</button>
-                    </div>
-                </form>
-            {% endif %}
-            
-        {% endif %}
+      <h2>Franchise Player</h2>
+      {% if not fBid %}
+      <p>
+        No one bid on {{franPlayer.name}}. {{franPlayer.owner.name}} retains his
+        services for $30.
+      </p>
+      {% else %}
+      <table class="table table-condensed table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Highest Bidder</th>
+            <th>Winning Bid</th>
+            <th>Winning Team's Collateral</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{fBid.player.name}}</td>
+            <td>{{fBid.owner_bidding.team_name}}</td>
+            <td>${{fBid.amount}}</td>
+            <td>
+              {% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick
+              #{{fBid.draftPick}}{%endif%}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      {% if franchiseDecisionMade %} {% if franPlayer.previous_owner_id ==
+      session.get('owner').get('id') %}
+      <p>You made your choice for this player already.</p>
+      {% else %}
+      <p>The {{lastYear}} owner of this player has made their decision.</p>
+      {% endif %} {% elif franPlayer.owner.id == session.get('owner').get('id')
+      %} {# Logged in owners player #}
+      <form method="POST" action="{{url_for('main.match_fran') }}">
+        <div class="form-group">
+          <label for="franMatch"
+            >Select to keep the player at the given value or release him and
+            receive the stated compensation</label
+          >
+          <select id="franMatch" name="franMatch" class="form-control">
+            <option value="match"
+              >{{fBid.player.name}} at ${{fBid.amount}}</option
+            >
+            <option value="release"
+              >{% if fBid.bounty%} $10 CAB {% else %}Round 1 Pick
+              #{{fBid.draftPick}} {%endif%}and $5 CAB</option
+            >
+          </select>
+          <button type="submit" class="btn btn-primary btn-lg">
+            Submit Decision
+          </button>
+        </div>
+      </form>
+      {% endif %} {% endif %}
     </div>
-    </div>
+  </div>
 </div>
 
 {% endblock %}}

@@ -15,7 +15,7 @@ from .. import db
 def keepers():
     # pylint: disable=no-member
 
-    # return redirect(url_for('main.tags'))
+    return redirect(url_for('main.tags'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     if request.method == 'GET':
         if current_owner.keeperSet:

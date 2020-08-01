@@ -13,6 +13,8 @@ from SlackBot import SlackBot
 from local_settings import let_bot_post
 from . import main
 from .. import db
+from constants import YEAR
+from bidding import process_match_release_player
 
 bot = SlackBot()
 
@@ -116,8 +118,8 @@ def bidding():
                 db.session.commit()
                 return redirect(url_for('main.bidding'))
     else:  # bidding is off.  redirect to 'matching' page, or whatever I'll call it
-        return "Bidding is off right now.  Just go back."
-        # return redirect(url_for('main.match'))
+        # return "Bidding is off right now.  Just go back."
+        return redirect(url_for('main.match'))
 
 
 @main.route('/reset_bids', methods=['POST'])
@@ -177,6 +179,7 @@ def match():
                                fBid=winning_fran_bid,
                                franchiseDecisionMade=franchise_decision_made,
                                transitionDecisionMade=transition_decision_made,
+                               lastYear=YEAR-1
                                )
 
 
@@ -185,10 +188,6 @@ def match():
 def match_trans():
     message = process_match_release_player(
         "TRANS", request.form.get('transMatch'), 2)
-    transition_decision_made = States.query.filter(
-        States.name == 'transitionDecisionMade').scalar()
-    transition_decision_made.bools = True
-    db.session.commit()
 
     both_decisions = get_both_decisions()
     if both_decisions is True:
@@ -212,10 +211,6 @@ def match_trans():
 def match_fran():
     message = process_match_release_player(
         "FRAN", request.form.get('franMatch'), 1)
-    franchise_decision_made = States.query.filter(
-        States.name == 'franchiseDecisionMade').scalar()
-    franchise_decision_made.bools = True
-    db.session.commit()
 
     both_decisions = get_both_decisions()
     if both_decisions is True:
@@ -231,38 +226,6 @@ def match_fran():
     else:
         print(message)
     return redirect(url_for('main.match'))
-
-
-# should probably move this to bidding.py and then import it from there
-def process_match_release_player(tag_type, decision, draft_round):
-    player_up_for_bid = Player.query.filter(
-        Player.upForBid == true()).filter(Player.tag == tag_type).scalar()
-    winning_bid = Bid.query.filter(Bid.player_id == player_up_for_bid.id).filter(
-        Bid.winningBid == true()).scalar()
-    winning_pick = winning_bid.draftPick
-    current_owner = Owner.query.get(player_up_for_bid.owner.id)
-    bidding_owner = Owner.query.get(winning_bid.owner_bidding_id)
-
-    if decision == 'match':  # keep player
-        # could do lots of things... but really don't need to do anything
-        message = "{0} has decided to keep {1} at a price of ${2}." \
-            .format(current_owner.team_name,
-                    player_up_for_bid.name,
-                    winning_bid.amount
-                    )
-    else:  # release player
-        player_up_for_bid.owner = bidding_owner.id
-        if winning_pick:
-            DraftPick.query.filter(
-                and_(DraftPick.pickInRound == winning_pick,
-                     DraftPick.draftRound == draft_round)
-            ).scalar().update_pick(current_owner.id)
-        message = "{0} has decided to let {1} take his talents to {2}." \
-            .format(current_owner.team_name,
-                    player_up_for_bid.name,
-                    bidding_owner.team_name)
-
-    return message
 
 
 def get_both_decisions():
