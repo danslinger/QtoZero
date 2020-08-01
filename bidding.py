@@ -15,6 +15,7 @@ from app.models.draft_pick import DraftPick
 from app.models.bid import Bid
 from app.models.states import States
 from local_settings import let_bot_post
+from constants import YEAR
 
 bot = SlackBot()
 ts = TaskScheduler()
@@ -117,40 +118,58 @@ def start_bid():
     for o in owners:
         o.madeBid = False
 
-    t_player = get_next_player("TRANS", biddingState.number)
-    if t_player:
-        t_player.upForBid = True
-        transition_decision_made.bools = False
-        message += 'The transition player now up for bid is {0}.\n'.format(t_player.name)
+    # TODO make this dynamic, not hard-coded
+    if biddingState.number > 8:
+        # that's all folks
+        message += end_bidding()
+
     else:
-        message += 'There are no transition players up for bid.\n'
+        t_player = get_next_player("TRANS", biddingState.number)
+        if t_player:
+            t_player.upForBid = True
+            transition_decision_made.bools = False
+            message += 'The transition player now up for bid is {0}.\n'.format(t_player.name)
+        else:
+            message += 'There are no transition players up for bid.\n'
 
-    f_player = get_next_player("FRAN", biddingState.number)
-    if f_player:
-        f_player.upForBid = True
-        franchise_decision_made.bools = False
-        message += 'The franchise player now up for bid is {0}.\n'.format(f_player.name)
-    else:
-        message += 'There are no franchise players up for bid.\n'
+        f_player = get_next_player("FRAN", biddingState.number)
+        if f_player:
+            f_player.upForBid = True
+            franchise_decision_made.bools = False
+            message += 'The franchise player now up for bid is {0}.\n'.format(f_player.name)
+        else:
+            message += 'There are no franchise players up for bid.\n'
 
-    biddingState.bools = True
+        biddingState.bools = True
 
-    print(f_player, t_player)
-    db.session.commit()
-    # Reset Cron job time
+        print(f_player, t_player)
+        db.session.commit()
+        # Reset Cron job time
 
-    stop_time = datetime.datetime.today() + datetime.timedelta(hours=48)
-    command = get_bidding_command("stop_bid")
-    stop_job = ts.get_job("STOPBID", command)
-    ts.set_job(stop_job, stop_time)
-    message += 'Bidding for these players ends '
-    message += stop_time.strftime(timeFormatString)
+        stop_time = datetime.datetime.today() + datetime.timedelta(hours=48)
+        command = get_bidding_command("stop_bid")
+        stop_job = ts.get_job("STOPBID", command)
+        ts.set_job(stop_job, stop_time)
+        message += 'Bidding for these players ends '
+        message += stop_time.strftime(timeFormatString)
 
     # Post Bot Message
     if letBotPost:
         bot.post_message(message, 'general_url')
     else:
         print(message)
+
+
+def end_bidding():
+    end_message = f"That's it for RFA in year {YEAR}."
+    db.session.commit()
+    # kind of hacky way to stop the crons... set it to 2 days ago
+    stop_time = datetime.datetime.today() - datetime.timedelta(hours=48)
+    command = get_bidding_command("stop_bid")
+    stop_job = ts.get_job("STOPBID", command)
+    ts.set_job(stop_job, stop_time)
+
+    return end_message
 
 
 def get_bidding_command(arg):
@@ -167,23 +186,25 @@ def stop_bid():
         Player.upForBid == true()).scalar()
     f_player = Player.query.filter(Player.tag == 'FRAN').filter(
         Player.upForBid == true()).scalar()
+    was_no_fran_bid = True
+    was_no_trans_bid = True
 
-    t_bids = get_bids(t_player)
-    f_bids = get_bids(f_player)
+    if t_player:
+        t_bids = get_bids(t_player)
+        was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids)
+        t_player.finishedBidding = True
 
-    was_no_trans_bid = process_bids(t_player, 'TRANS', t_bids)
-    was__no_fran_bid = process_bids(f_player, 'FRAN', f_bids)
+    if f_player:
+        f_bids = get_bids(f_player)
+        was_no_fran_bid = process_bids(f_player, 'FRAN', f_bids)
+        f_player.finishedBidding = True
 
     # update the bidding state
     States.query.filter(States.name == 'biddingOn').scalar().bools = False
 
-    if t_player:
-        t_player.finishedBidding = True
-    if f_player:
-        f_player.finishedBidding = True
     db.session.commit()
 
-    if was__no_fran_bid and was_no_trans_bid:
+    if was_no_fran_bid and was_no_trans_bid:
         message = "There were no bids made this round on any player."
         start_time = datetime.datetime.today() + datetime.timedelta(minutes=1)
         command = get_bidding_command("start_bid")
@@ -198,17 +219,14 @@ def stop_bid():
         ts.set_job(start_job, start_time)
         message = "Owners must match or release by {0}.  New players will be available to pick " \
                   "at that time".format(start_time.strftime(timeFormatString))
-        message += "  If both are matched or released before then, new players will be available" \
+        message += ".  If both are matched or released before then, new players will be available" \
                    " at that time"
-        message += "  I'll send a message when new players are available."
+        message += ".  I'll send a message when new players are available."
 
     if letBotPost:
         bot.post_message(message, 'general_url')
     else:
         print(message)
-
-
-# NEED TO FIGURE OUT OWNER in SESSION.  Force log out? ########
 
 
 def get_bids(player):
@@ -325,6 +343,15 @@ def process_match_release_player(tag_type, decision, draft_round):
             .format(current_owner.team_name,
                     player_up_for_bid.name,
                     bidding_owner.team_name)
+
+    if (tag_type == "TRANS"):
+        tdm = States.query.filter_by(name="transitionDecisionMade").first()
+        tdm.bools = True
+    else:
+        fdm = States.query.filter_by(name="franchiseDecisionMade").first()
+        fdm.bools = True
+    db.session.commit()
+
     message += "\n"
     return message
 
