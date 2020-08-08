@@ -12,7 +12,7 @@ from .. import db
 @main.route('/probowl', methods=['GET'])
 @login_required
 def probowl():
-    # return redirect(url_for('main.index'))
+    return redirect(url_for('main.index'))
     current_owner = Owner.query.get(session.get('owner').get('id'))
     division = Division.query.get(current_owner.division_id)
     positions = ['QB', 'RB', 'WR', 'TE', 'PK', 'Def']

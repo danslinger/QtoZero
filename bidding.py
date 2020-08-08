@@ -356,11 +356,27 @@ def process_match_release_player(tag_type, decision, draft_round):
     return message
 
 
+def check_for_both_decisions():
+    ''' This checks if both owners have decided, and if so executes start_bid()'''
+    both_decisions = get_both_decisions()
+    if both_decisions is True:
+        start_bid()
+
+
+def get_both_decisions():
+    franchise_decision_made = States.query.filter(
+        States.name == 'franchiseDecisionMade').scalar().bools
+    transition_decision_made = States.query.filter(
+        States.name == 'transitionDecisionMade').scalar().bools
+    return franchise_decision_made and transition_decision_made
+
+
 if __name__ == '__main__':
     app = create_app(os.getenv('FLASK_CONFIG')
                      or 'default').app_context().push()
     action = sys.argv[1]
 
+    print(os.getenv('FLASK_CONFIG'))
     if action == 'stop_bid':
         stop_bid()
 

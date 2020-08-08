@@ -14,7 +14,7 @@ from local_settings import let_bot_post
 from . import main
 from .. import db
 from constants import YEAR
-from bidding import process_match_release_player
+from bidding import process_match_release_player, check_for_both_decisions
 
 bot = SlackBot()
 
@@ -189,20 +189,7 @@ def match_trans():
     message = process_match_release_player(
         "TRANS", request.form.get('transMatch'), 2)
 
-    both_decisions = get_both_decisions()
-    if both_decisions is True:
-        # get start bid job and redo it so it happens now
-        # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
-        # startJob = ts.get_job('STARTBID')
-        # ts.set_job(startJob, startTime)
-        pwd = os.getcwd()
-        subprocess.call([os.path.join(pwd, 'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
-                         'start_bid'])
-
-    if let_bot_post:
-        bot.post_message(message, 'general_url')
-    else:
-        print(message)
+    check_for_both_decisions()
     return redirect(url_for('main.match'))
 
 
@@ -212,25 +199,9 @@ def match_fran():
     message = process_match_release_player(
         "FRAN", request.form.get('franMatch'), 1)
 
-    both_decisions = get_both_decisions()
-    if both_decisions is True:
-        # get start bid job and redo it so it happens now
-        # startTime = datetime.datetime.today() + datetime.timedelta(minutes=2)
-        # startJob = ts.get_job('STARTBID')
-        # ts.set_job(startJob, startTime)
-        pwd = os.getcwd()
-        subprocess.call([os.path.join(pwd, 'venv/bin/python'), os.path.join(pwd, 'bidding.py'),
-                         'start_bid'])
     if let_bot_post:
         bot.post_message(message, 'general_url')
     else:
         print(message)
+    check_for_both_decisions()
     return redirect(url_for('main.match'))
-
-
-def get_both_decisions():
-    franchise_decision_made = States.query.filter(
-        States.name == 'franchiseDecisionMade').scalar().bools
-    transition_decision_made = States.query.filter(
-        States.name == 'transitionDecisionMade').scalar().bools
-    return franchise_decision_made and transition_decision_made
