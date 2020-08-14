@@ -189,6 +189,10 @@ def match_trans():
     message = process_match_release_player(
         "TRANS", request.form.get('transMatch'), 2)
 
+    if let_bot_post:
+        bot.post_message(message, 'general_url')
+    else:
+        print(message)
     check_for_both_decisions()
     return redirect(url_for('main.match'))
 
