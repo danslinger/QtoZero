@@ -168,9 +168,9 @@ def match():
         # get the winning transition and franchise bids
         # bidding.py stop_bid() should have run, so can get winning bid via queries
         winning_trans_bid = Bid.query.filter(
-            Bid.player_id == trans_player.id).filter(Bid.winningBid == true()).scalar()
+            Bid.player_id == trans_player.id).filter(Bid.winningBid == true()).scalar() if trans_player else None
         winning_fran_bid = Bid.query.filter(
-            Bid.player_id == fran_player.id).filter(Bid.winningBid == true()).scalar()
+            Bid.player_id == fran_player.id).filter(Bid.winningBid == true()).scalar() if fran_player else None
 
         return render_template('match.html',
                                transPlayer=trans_player,

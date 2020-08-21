@@ -8,7 +8,9 @@
     <div class="col-sm-12 col-xs-12"></div>
     <div class="col-sm-6 col-xs-12">
       <h2>Transition Player</h2>
-      {% if not tBid %}
+      {% if not transPlayer %}
+      <h4>No Transition Player up for bid</h4>
+      {% else %} {% if not tBid %}
       <p>
         No one bid on {{transPlayer.name}}. {{transPlayer.owner.name}} retains
         his services for $20.
@@ -62,11 +64,13 @@
           </button>
         </div>
       </form>
-      {% endif %} {% endif %} {# If the player had no bids #}
+      {% endif %} {% endif %} {% endif %} {# If the player had no bids #}
     </div>
     <div class="col-sm-6 col-xs-12">
       <h2>Franchise Player</h2>
-      {% if not fBid %}
+      {% if not franPlayer %}
+      <h4>No Franchise Player up for bid</h4>
+      {% else %} {% if not fBid %}
       <p>
         No one bid on {{franPlayer.name}}. {{franPlayer.owner.name}} retains his
         services for $30.
@@ -120,7 +124,7 @@
           </button>
         </div>
       </form>
-      {% endif %} {% endif %}
+      {% endif %} {% endif %} {% endif %}
     </div>
   </div>
 </div>
