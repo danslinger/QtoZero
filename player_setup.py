@@ -56,6 +56,7 @@ def main():
     for x in calvinball_players:
         player_object = Player.query.filter_by(mfl_id=x.get('id')).first()
         if player_object:
+            player_object.owner = None
             player_object.update_player(x)
             players.append(player_object)
         else:

@@ -70,30 +70,16 @@ def get_week_number(today=None):
     made it so it was season agnostic, but I'm not sure how to do that.  Maybe via
     an http request somewhere?  Anyway, this is probably overly complicated...
     '''
+    nfl_week0 = date(2020, 9, 6)  # Sunday before first game
+
     if not today:
         today = date.today()
-    weeks = {'1': [date(2019, 9, 3), date(2019, 9, 9)],
-             '2': [date(2019, 9, 10), date(2019, 9, 16)],
-             '3': [date(2019, 9, 17), date(2019, 9, 23)],
-             '4': [date(2019, 9, 24), date(2019, 9, 30)],
-             '5': [date(2019, 10, 1), date(2019, 10, 7)],
-             '6': [date(2019, 10, 8), date(2019, 10, 14)],
-             '7': [date(2019, 10, 15), date(2019, 10, 21)],
-             '8': [date(2019, 10, 22), date(2019, 10, 28)],
-             '9': [date(2019, 10, 29), date(2019, 11, 4)],
-             '10': [date(2019, 11, 5), date(2019, 11, 11)],
-             '11': [date(2019, 11, 12), date(2019, 11, 18)],
-             '12': [date(2019, 11, 19), date(2019, 11, 25)],
-             '13': [date(2019, 11, 26), date(2019, 12, 2)],
-             '14': [date(2019, 12, 3), date(2019, 12, 9)],
-             '15': [date(2019, 12, 10), date(2019, 12, 16)],
-             '16': [date(2019, 12, 17), date(2019, 12, 23)],
-             '17': [date(2019, 12, 24), date(2020, 1, 1)],
-             }
-    for weekNumber, weekDates in weeks.items():
-        if weekDates[1] >= today >= weekDates[0]:
-            return weekNumber
-    return 0
+
+    this_week = today.isocalendar()[1]
+    if today.year > year and this_week < 53:
+        this_week += 53
+
+    return this_week - nfl_week0.isocalendar()[1]
 
 
 if __name__ == '__main__':
