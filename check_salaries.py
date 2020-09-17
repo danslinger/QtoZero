@@ -1,12 +1,14 @@
 import os
+import re
 import json
 import requests
 import player_setup
 from app.models.owner import Owner
+from app.models.player import Player
 from app import create_app
 from tokens import tokens
 from SlackBot import SlackBot
-from constants import LEAGUE_ID, MFL_URL
+from constants import LEAGUE_ID, MFL_URL, MFL_API
 from local_settings import let_bot_post
 
 api_token = tokens['mfl_token']
@@ -101,9 +103,53 @@ def check_player_count():
             print(message)
 
 
+def check_for_non_droppable_player(data):
+    message = ""
+    found = False
+    pattern = re.compile("\|\d{3,6},")
+    for transaction in data['transactions']['transaction']:
+        t = transaction['transaction']
+        match = pattern.search(t)
+        if match:
+            p_id = match.group()[1:-1]
+            player = Player.query.filter_by(mfl_id=p_id).first()
+            if is_non_droppable(player):
+                found = True
+                message += f"{player.name} was dropped\n"
+    return message
+
+
+def is_non_droppable(player):
+    contracts = ["K", "F", "SF", "T"]
+    return (player.salary and int(player.salary) >= 20) or player.contractStatus in contracts
+
+
+def get_transactions():
+    payload = {'TYPE': 'transactions',
+               'JSON': 1,
+               'L': LEAGUE_ID,
+               'DAYS': 2,
+               'APIKEY': api_token,
+               'TRANS_TYPE': "WAIVER,BBID_WAIVER,FREE_AGENT"
+               }
+    r = requests.get(MFL_URL, params=payload)
+    return json.loads(r.content)
+
+
+def report_to_danny(t_report):
+    if let_bot_post:
+        bot.post_message(message, 'test_url')
+    else:
+        print(message)
+
+
 if __name__ == '__main__':
     player_setup.main()
     create_app(os.getenv('FLASK_CONFIG') or 'default').app_context().push()
     league_data = get_league_info()
     check_salary_cap(league_data)
     check_player_count()
+    transactions = get_transactions()
+    transaction_report = check_for_non_droppable_player(transactions)
+    if transaction_report:
+        report_to_danny(transaction_report)
