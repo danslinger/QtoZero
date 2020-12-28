@@ -22,3 +22,6 @@ settings.json
 .pep8
 .env
 .vscode
+venv_
+.coverage
+throw-away-code.py

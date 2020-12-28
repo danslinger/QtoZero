@@ -10,7 +10,7 @@
 </style>
 <div class="col-md-1"></div>
 <div class="col-sm-9 col-xs-12">
-  <img src={{ url_for('static', filename=logo_url) }} class="banner"> 
+  <img src={{ url_for('static', filename=owner.image_name) }} class="banner">
 {% block messages %}{{super()}}{% endblock%}
 <div class="row">
   <div class="col-lg-9 col-xs-12">
@@ -77,15 +77,6 @@
             {% if not pb_roster %}<option selected></option>{% endif %}
             {% for player in players['FLEX'] %}
               <option {% if pb_roster and pb_roster.flex == player.id %} selected {% endif %} value="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="input-group">
-          <div class="input-group-addon">Select 1 Kicker</div>
-          <select id="PK" name="PK" class="form-control">
-            {% if not pb_roster %}<option selected></option>{% endif %}
-            {% for player in players['PK'] %}
-              <option {% if pb_roster and pb_roster.pk == player.id %} selected {% endif %} value="{{ player.id }}">{{ player.name }} : {{ player.owner.team_name }}</option>
             {% endfor %}
           </select>
         </div>
